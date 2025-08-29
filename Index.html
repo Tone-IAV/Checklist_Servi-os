@@ -49,12 +49,12 @@
   /* --------- Seleção Visual (cards) --------- */
   .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
   .tile{
-    display:flex;align-items:center;gap:12px;background:#ffffff;border:2px solid #dbe6f1;border-radius:16px;
-    padding:14px; cursor:pointer; min-height:84px; transition:.15s;
+    display:flex;align-items:center;gap:16px;background:#ffffff;border:2px solid #dbe6f1;border-radius:16px;
+    padding:20px; cursor:pointer; min-height:110px; transition:.15s;
   }
   .tile:hover{border-color:#93c5fd; box-shadow:0 4px 16px #0f172a0d}
-  .tile input{width:auto;transform:scale(1.4)}
-  .tile .icon{width:44px;height:44px;flex:0 0 44px;border-radius:10px;display:grid;place-items:center;background:#eef5ff;border:1px solid #d4e4ff}
+  .tile input{width:auto;transform:scale(1.6)}
+  .tile .icon{width:64px;height:64px;flex:0 0 64px;border-radius:10px;display:grid;place-items:center;background:#eef5ff;border:1px solid #d4e4ff}
   .tile .title{font-weight:700}
   .tile .hint{font-size:12px;color:var(--muted)}
   .tile.active{border-color:#2563eb; background:#f5f9ff}
@@ -64,11 +64,16 @@
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
   .chip{background:#eef5ff;border:1px solid #d4e4ff; color:#0f172a; border-radius:999px;padding:6px 10px;font-size:12px}
   .list-panel{border:1px dashed #cbd5e1;border-radius:12px;padding:10px;background:#fbfeff;max-height:260px;overflow:auto}
-  .comp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .comp{display:flex;align-items:center;gap:10px;border:2px solid #e2e8f0;border-radius:12px;padding:10px;min-height:64px;background:#fff;cursor:pointer}
+  .comp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .comp{display:flex;align-items:center;gap:14px;border:2px solid #e2e8f0;border-radius:14px;padding:14px;min-height:110px;background:#fff;cursor:pointer}
   .comp:hover{border-color:#93c5fd}
-  .comp input{width:auto;transform:scale(1.3)}
-  .comp .icon{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;background:#f4f7ff;border:1px solid #dbe6f1}
+  .comp input[type=checkbox]{width:auto;transform:scale(1.4)}
+  .comp .icon{width:64px;height:64px;border-radius:10px;display:grid;place-items:center;background:#f4f7ff;border:1px solid #dbe6f1}
+  .comp .inputs{display:flex;gap:8px;margin-top:6px}
+  .comp .inputs input{flex:1;border:1px solid #dbe6f1;border-radius:8px;padding:6px}
+  .comp .inputs input.qtd{flex:0 0 60px}
+  .comp .inputs input.val{flex:0 0 80px}
+  .comp .hint{font-size:12px;color:var(--muted)}
   .footer-note{font-size:12px;color:var(--muted)}
   @media (max-width:900px){
     .tiles{grid-template-columns:1fr 1fr}
@@ -146,57 +151,14 @@
     </div>
 
     <!-- Opções & Prévia -->
-    <div class="grid g4" style="margin-top:10px">
-      <div>
-        <label>Tipo base</label>
-        <select id="l-tipo"><option>Peça</option><option>Serviço</option></select>
-      </div>
-      <div>
-        <label>Qtd padrão</label>
-        <input id="l-qtd" type="number" step="0.01" value="1"/>
-      </div>
-      <div>
-        <label>Unidade padrão</label>
-        <select id="l-un"><option>UN</option><option>H</option><option>L</option><option>KG</option><option>KIT</option></select>
-      </div>
-      <div>
-        <label>Preço padrão (R$)</label>
-        <input id="l-preco" type="number" step="0.01" value="0"/>
-      </div>
-    </div>
-    <div class="row-actions" style="margin-top:6px">
-      <label class="btn"><input id="l-completo" type="checkbox" style="transform:scale(1.2);margin-right:8px"> Completo (conjunto do SubSistema)</label>
-      <label class="btn"><input id="l-auto-serv" type="checkbox" style="transform:scale(1.2);margin-right:8px" checked> Gerar serviço automático para peças</label>
-    </div>
-
     <div class="divider"></div>
-    <div class="toolbar" style="justify-content:space-between">
-      <div class="footer-note">Dica: clique nos cards grandes para marcar/desmarcar. Itens filtrados = seleção mais rápida.</div>
-      <div class="toolbar">
-        <button class="btn" id="btn-preview">Pré-visualizar</button>
-        <button class="btn primary" id="btn-add-batch">Adicionar itens</button>
-      </div>
-    </div>
-
-    <div id="previewBox" class="list-panel" style="margin-top:10px; display:none">
-      <table class="preview-table" style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr>
-            <th style="text-align:left;border-bottom:1px solid var(--line);padding:8px">SubSistema</th>
-            <th style="text-align:left;border-bottom:1px solid var(--line);padding:8px">Componente</th>
-            <th style="text-align:left;border-bottom:1px solid var(--line);padding:8px">Peculiaridade</th>
-            <th style="text-align:left;border-bottom:1px solid var(--line);padding:8px">Qtd</th>
-            <th style="text-align:left;border-bottom:1px solid var(--line);padding:8px">Un</th>
-            <th style="text-align:left;border-bottom:1px solid var(--line);padding:8px">Preço</th>
-          </tr>
-        </thead>
-        <tbody id="preview-body"></tbody>
-      </table>
+    <div class="toolbar" style="justify-content:flex-end">
+      <button class="btn primary" id="btn-add-batch">Adicionar itens</button>
     </div>
   </div>
 
-  <!-- ITENS LANÇADOS -->
-  <div class="card">
+  <!-- ITENS LANÇADOS (oculto) -->
+  <div class="card" id="itemsCard" style="display:none">
     <div class="toolbar" style="justify-content:space-between;align-items:center">
       <h3 class="section-title" style="margin:0">Itens da OS</h3>
       <div class="toolbar">
@@ -383,11 +345,23 @@ function renderComponentes(){
       const c = el('div',{class:'comp', 'data-sub':sub, 'data-comp':comp});
       c.innerHTML = `<div class="icon">${sysIcon(SYS)}</div>
                      <div style="flex:1"><div class="title">${comp}</div>
-                     <div class="hint">${sub}</div></div>
+                     <div class="hint">${sub}</div>
+                     <div class="inputs">
+                       <input type="number" class="qtd" placeholder="Qtd" value="1">
+                       <input class="obs" placeholder="Obs">
+                       <input type="number" class="val" placeholder="Valor" value="0">
+                     </div>
+                     </div>
                      <input type="checkbox">`;
-      c.addEventListener('click', ()=>{
-        const chk=c.querySelector('input'); chk.checked=!chk.checked;
-        c.classList.toggle('active', chk.checked);
+      c.addEventListener('click', e=>{
+        if(e.target.classList.contains('qtd')||e.target.classList.contains('obs')||e.target.classList.contains('val')) return;
+        const chk=c.querySelector('input[type=checkbox]');
+        if(e.target.type==='checkbox'){
+          c.classList.toggle('active', chk.checked);
+        }else{
+          chk.checked=!chk.checked;
+          c.classList.toggle('active', chk.checked);
+        }
       });
       compsBox.appendChild(c);
     });
@@ -414,8 +388,8 @@ function applyFilterComp(){
 }
 filtroSub.addEventListener('input', applyFilterSub);
 filtroComp.addEventListener('input', applyFilterComp);
-document.getElementById('btnCompAll').onclick = ()=>{ [...compsBox.children].forEach(c=>{ if(c.style.display!=='none'){ c.querySelector('input').checked=true; c.classList.add('active'); } }); };
-document.getElementById('btnCompNone').onclick = ()=>{ [...compsBox.children].forEach(c=>{ c.querySelector('input').checked=false; c.classList.remove('active'); }); };
+document.getElementById('btnCompAll').onclick = ()=>{ [...compsBox.children].forEach(c=>{ if(c.style.display!=='none'){ const chk=c.querySelector('input[type=checkbox]'); chk.checked=true; c.classList.add('active'); } }); };
+document.getElementById('btnCompNone').onclick = ()=>{ [...compsBox.children].forEach(c=>{ const chk=c.querySelector('input[type=checkbox]'); chk.checked=false; c.classList.remove('active'); }); };
 
 /* ======= Itens (linhas) ======= */
 const itemsEl = document.getElementById('items');
@@ -487,71 +461,22 @@ document.getElementById('t-acresc').addEventListener('input', updateTotals);
 document.getElementById('btn-add').addEventListener('click', ()=>{ itemsEl.appendChild(createItemRow()); updateTotals(); });
 itemsEl.appendChild(createItemRow()); updateTotals();
 
-/* ======= Prévia e Adição em lote ======= */
-const lTipo = document.getElementById('l-tipo');
-const lQtd = document.getElementById('l-qtd');
-const lUn = document.getElementById('l-un');
-const lPreco = document.getElementById('l-preco');
-const lCompleto = document.getElementById('l-completo');
-const lAutoServ = document.getElementById('l-auto-serv');
-const previewBox = document.getElementById('previewBox');
-const previewBody = document.getElementById('preview-body');
-
-document.getElementById('btn-preview').addEventListener('click', buildPreviewRows);
-function buildPreviewRows(){
-  previewBody.innerHTML=''; previewBox.style.display='block';
-  if(!SYS || SUBS_MARKED.size===0){ previewBody.innerHTML='<tr><td colspan="6" style="padding:10px;color:#64748b">Selecione ao menos um SubSistema.</td></tr>'; return; }
-  const entries = [];
-  if(lCompleto.checked){
-    [...SUBS_MARKED].forEach(sub=> entries.push({sub, comp:'Conjunto completo'}));
-  }else{
-    const selectedComps = [...compsBox.children].filter(c=> c.querySelector('input').checked && c.style.display!=='none');
-    if(!selectedComps.length){ previewBody.innerHTML='<tr><td colspan="6" style="padding:10px;color:#64748b">Marque Componentes ou use “Completo”.</td></tr>'; return; }
-    selectedComps.forEach(c=> entries.push({sub:c.getAttribute('data-sub'), comp:c.getAttribute('data-comp')}));
-  }
-
-  entries.forEach(ent=>{
-    const tr = el('tr',{},
-      el('td', {style:"padding:8px;border-bottom:1px solid #e2e8f0"}, ent.sub),
-      el('td', {style:"padding:8px;border-bottom:1px solid #e2e8f0"}, ent.comp),
-      el('td', {style:"padding:8px;border-bottom:1px solid #e2e8f0"}, el('input',{placeholder:'Peculiaridade'})),
-      el('td', {style:"padding:8px;border-bottom:1px solid #e2e8f0"}, el('input',{type:'number',step:'0.01', value:lQtd.value||1})),
-      el('td', {style:"padding:8px;border-bottom:1px solid #e2e8f0"}, (()=>{ const s=buildSelect(['UN','H','L','KG','KIT']); s.value=(lTipo.value==='Serviço')?'H':(lUn.value||'UN'); return s; })()),
-      el('td', {style:"padding:8px;border-bottom:1px solid #e2e8f0"}, el('input',{type:'number',step:'0.01', value:lPreco.value||0}))
-    );
-    previewBody.append(tr);
-  });
-}
-
+/* ======= Adição em lote ======= */
 document.getElementById('btn-add-batch').addEventListener('click', ()=>{
-  if(previewBody.children.length===0){ buildPreviewRows(); return; }
-  const rows = [...previewBody.querySelectorAll('tr')];
-  if(!rows.length) return;
-
-  rows.forEach(tr=>{
-    const tds=tr.querySelectorAll('td');
-    const sub = tds[0].textContent;
-    const comp = tds[1].textContent;
-    const desc = tds[2].querySelector('input').value;
-    const qtd  = parseFloat(tds[3].querySelector('input').value||'1');
-    const un   = tds[4].querySelector('select').value || ((lTipo.value==='Serviço')?'H':'UN');
-    const preco= parseFloat(tds[5].querySelector('input').value||'0');
-
-    const base = { sistema:SYS, sub, comp, tipo:lTipo.value,
-      serv:(lTipo.value==='Peça')?'Troca/Substituição':'Teste funcional',
-      desc, qtd, un, preco };
+  const selected = [...compsBox.children].filter(c=> c.querySelector('input[type=checkbox]').checked && c.style.display!=='none');
+  selected.forEach(c=>{
+    const sub = c.getAttribute('data-sub');
+    const comp = c.getAttribute('data-comp');
+    const tipo = 'Peça';
+    const desc = c.querySelector('.obs').value;
+    const qtd  = parseFloat(c.querySelector('.qtd').value || '1');
+    const preco= parseFloat(c.querySelector('.val').value || '0');
+    const un   = 'UN';
+    const base = { sistema:SYS, sub, comp, tipo, serv:(tipo==='Peça')?'Troca/Substituição':'Teste funcional', desc, qtd, un, preco };
     itemsEl.appendChild(createItemRow(base));
-
-    if(lTipo.value==='Peça' && lAutoServ.checked){
-      const servRow = { sistema:SYS, sub, comp, tipo:'Serviço', serv:'Troca/Substituição',
-        desc:`Serviço referente a: ${comp}${desc? ' — '+desc:''}`, qtd:1, un:'H', preco:0 };
-      itemsEl.appendChild(createItemRow(servRow));
-    }
   });
   updateTotals();
-  previewBox.style.display='none';
-  // Limpa marcações de componentes para próxima seleção
-  [...compsBox.children].forEach(c=>{ c.querySelector('input').checked=false; c.classList.remove('active'); });
+  [...compsBox.children].forEach(c=>{ c.querySelector('input[type=checkbox]').checked=false; c.classList.remove('active'); });
 });
 
 /* ======= Exportar / Salvar / Carregar ======= */
