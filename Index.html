@@ -260,22 +260,22 @@ function el(tag, attrs={}, ...children){ const e=document.createElement(tag); Ob
   document.getElementById('f-data-entrada').valueAsDate = new Date();
 })();
 
-/* ======= Ícones simples (SVG inline) por Sistema ======= */
+/* ======= Ícones por Sistema ======= */
 function sysIcon(name){
-  const base = 'style="width:26px;height:26px"';
+  const base = 'style="width:40px;height:40px"';
   const map = {
-    "Motor": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M3 9h6l2-2h4l3 3v6H3V9Z" stroke="#2563eb" stroke-width="1.5"/><path d="M14 7v3m-8 6h14" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Transmissão/Tração": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="8" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/><circle cx="16" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/><path d="M11 12h2" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Direção": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#2563eb" stroke-width="1.5"/><path d="M12 7v5l4 2" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Suspensão": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M6 7l12 10M6 17L18 7" stroke="#2563eb" stroke-width="1.5"/><rect x="4" y="5" width="4" height="4" stroke="#2563eb" stroke-width="1.5"/><rect x="16" y="15" width="4" height="4" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Freios": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="7" stroke="#2563eb" stroke-width="1.5"/><path d="M12 5a7 7 0 017 7h-5a2 2 0 00-2-2V5Z" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Pneus & Rodas": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#2563eb" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Elétrica/Eletrônica": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h7l-1 8 11-12h-7l1-8Z" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Ar-Condicionado/Climatização": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M12 2v20M4 6l16 12M4 18L20 6" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Carroceria & Fechaduras": `<svg ${base} viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="10" rx="2" stroke="#2563eb" stroke-width="1.5"/><path d="M7 8l3-3h4l3 3" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Segurança & Itens obrigatórios": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4v5c0 4.418-3.582 8-8 8s-8-3.582-8-8V7l8-4Z" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Motor": `<img src="https://cdn-icons-png.flaticon.com/128/2061/2061956.png" alt="Motor" ${base}/>`,
+    "Transmissão/Tração": `<img src="https://cdn-icons-png.flaticon.com/128/2783/2783760.png" alt="Transmissão/Tração" ${base}/>`,
+    "Direção": `<img src="https://cdn-icons-png.flaticon.com/128/4869/4869033.png" alt="Direção" ${base}/>`,
+    "Suspensão": `<img src="https://cdn-icons-png.flaticon.com/128/4539/4539880.png" alt="Suspensão" ${base}/>`,
+    "Freios": `<img src="https://cdn-icons-png.flaticon.com/128/662/662877.png" alt="Freios" ${base}/>`,
+    "Pneus & Rodas": `<img src="https://cdn-icons-png.flaticon.com/128/1768/1768143.png" alt="Pneus e Rodas" ${base}/>`,
+    "Elétrica/Eletrônica": `<img src="https://cdn-icons-png.flaticon.com/128/649/649797.png" alt="Elétrica e Eletrônica" ${base}/>`,
+    "Ar-Condicionado/Climatização": `<img src="https://cdn-icons-png.flaticon.com/128/18208/18208239.png" alt="Ar-Condicionado" ${base}/>`,
+    "Carroceria & Fechaduras": `<img src="https://cdn-icons-png.flaticon.com/128/6246/6246180.png" alt="Carroceria e Fechaduras" ${base}/>`,
+    "Segurança & Itens obrigatórios": `<img src="https://cdn-icons-png.flaticon.com/128/1039/1039155.png" alt="Segurança" ${base}/>`,
     "Documentação & Acessórios": `<svg ${base} viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2" stroke="#2563eb" stroke-width="1.5"/><path d="M8 7h8M8 11h8" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Diagnóstico & Testes": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M4 16l4-8 4 8 4-6 4 6" stroke="#2563eb" stroke-width="1.5"/><rect x="3" y="3" width="18" height="4" rx="1" stroke="#2563eb" stroke-width="1.5"/></svg>`
+    "Diagnóstico & Testes": `<img src="https://cdn-icons-png.flaticon.com/128/2631/2631398.png" alt="Diagnóstico e Testes" ${base}/>`
   };
   return map[name] || `<svg ${base}></svg>`;
 }
