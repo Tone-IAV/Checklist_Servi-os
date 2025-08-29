@@ -122,6 +122,11 @@
     <!-- Passo 1: Sistemas -->
     <label>1) Escolha o <b>Sistema</b></label>
     <div id="tiles-sistemas" class="tiles" aria-label="Sistemas"></div>
+    <div class="row-actions">
+      <button id="btn-export-hier" class="btn">Exportar Sistemas</button>
+      <button id="btn-import-hier" class="btn">Importar Sistemas</button>
+      <input type="file" id="file-hier" accept="application/json" style="display:none" />
+    </div>
 
     <!-- Passo 2: SubSistemas -->
     <div class="divider"></div>
@@ -484,6 +489,34 @@ document.getElementById('btn-export').addEventListener('click', ()=>{
     (it.desc||'').replace(/;/g,','), it.qtd||0, it.un||'', (it.preco||0)
   ].join(';')));
   download(`OS_${document.getElementById('f-os').value||'itens'}.csv`, lines.join('\n'), 'text/csv;charset=utf-8;');
+});
+document.getElementById('btn-export-hier').addEventListener('click', ()=>{
+  download('hierarquia.json', JSON.stringify(HIERARQUIA, null, 2), 'application/json');
+});
+const fileHier = document.getElementById('file-hier');
+document.getElementById('btn-import-hier').addEventListener('click', ()=> fileHier.click());
+fileHier.addEventListener('change', e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(!data || typeof data !== 'object') throw new Error('JSON inválido');
+      Object.keys(HIERARQUIA).forEach(k=>delete HIERARQUIA[k]);
+      Object.assign(HIERARQUIA, data);
+      SYS = null;
+      SUBS.clear();
+      renderSistemas();
+      renderSubSistemas();
+      renderComponentes();
+      alert('Hierarquia importada!');
+    }catch(err){
+      alert('Erro ao importar: '+err.message);
+    }
+  };
+  reader.readAsText(f);
+  e.target.value='';
 });
 function buildPayload(){
   return {
