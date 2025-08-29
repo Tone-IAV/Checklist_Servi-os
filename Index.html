@@ -53,23 +53,24 @@
     padding:20px; cursor:pointer; min-height:110px; transition:.15s;
   }
   .tile:hover{border-color:#93c5fd; box-shadow:0 4px 16px #0f172a0d}
-  .tile input{width:auto;transform:scale(1.6)}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
   .tile .icon{width:64px;height:64px;flex:0 0 64px;border-radius:10px;display:grid;place-items:center;background:#eef5ff;border:1px solid #d4e4ff}
   .tile .title{font-weight:700}
   .tile .hint{font-size:12px;color:var(--muted)}
+  .tile .sub-inputs{display:none;margin-top:6px}
   .tile.active{border-color:#2563eb; background:#f5f9ff}
+  .tile.active .sub-inputs{display:block;animation:fadeIn .2s ease}
+  .tile.active .sub-inputs input{width:100%;border:1px solid #dbe6f1;border-radius:8px;padding:6px}
   .row-actions{display:flex;gap:8px;flex-wrap:wrap}
   .search{display:flex;gap:8px;align-items:center}
   .search input{flex:1}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .chip{background:#eef5ff;border:1px solid #d4e4ff; color:#0f172a; border-radius:999px;padding:6px 10px;font-size:12px}
   .list-panel{border:1px dashed #cbd5e1;border-radius:12px;padding:10px;background:#fbfeff;max-height:260px;overflow:auto}
   .comp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .comp{display:flex;align-items:center;gap:14px;border:2px solid #e2e8f0;border-radius:14px;padding:14px;min-height:110px;background:#fff;cursor:pointer}
   .comp:hover{border-color:#93c5fd}
-  .comp input[type=checkbox]{width:auto;transform:scale(1.4)}
   .comp .icon{width:64px;height:64px;border-radius:10px;display:grid;place-items:center;background:#f4f7ff;border:1px solid #dbe6f1}
-  .comp .inputs{display:flex;gap:8px;margin-top:6px}
+  .comp .inputs{display:none;gap:8px;margin-top:6px}
+  .comp.active .inputs{display:flex;animation:fadeIn .2s ease}
   .comp .inputs input{flex:1;border:1px solid #dbe6f1;border-radius:8px;padding:6px}
   .comp .inputs input.qtd{flex:0 0 60px}
   .comp .inputs input.val{flex:0 0 80px}
@@ -125,26 +126,21 @@
     <div class="divider"></div>
     <div class="row-actions">
       <div class="search" style="flex:1">
-        <label style="margin:0;color:var(--muted)">2) Marque SubSistemas</label>
+        <label style="margin:0;color:var(--muted)">2) Selecione SubSistema</label>
         <input id="filtroSub" placeholder="Buscar SubSistemas…" />
       </div>
-      <button class="btn" id="btnSubAll">Selecionar tudo</button>
-      <button class="btn" id="btnSubNone">Limpar</button>
     </div>
     <div id="panel-subs" class="list-panel">
       <div id="subs" class="tiles"></div>
     </div>
-    <div class="chips" id="subsSel"></div>
 
     <!-- Passo 3: Componentes -->
     <div class="divider"></div>
     <div class="row-actions">
       <div class="search" style="flex:1">
-        <label style="margin:0;color:var(--muted)">3) Marque Componentes</label>
+        <label style="margin:0;color:var(--muted)">3) Selecione Componente</label>
         <input id="filtroComp" placeholder="Buscar Componentes… (ex.: pastilha, correia)" />
       </div>
-      <button class="btn" id="btnCompAll">Selecionar todos (filtrados)</button>
-      <button class="btn" id="btnCompNone">Limpar</button>
     </div>
     <div id="panel-comps" class="list-panel">
       <div id="comps" class="comp-grid"></div>
@@ -281,20 +277,19 @@ function sysIcon(name){
 const tilesSistemas = document.getElementById('tiles-sistemas');
 const subsBox = document.getElementById('subs');
 const compsBox = document.getElementById('comps');
-const subsSel = document.getElementById('subsSel');
 const filtroSub = document.getElementById('filtroSub');
 const filtroComp = document.getElementById('filtroComp');
 
 let SYS = null;
-let SUBS_MARKED = new Set();
+let SUB = null;
+let COMP = null;
 function renderSistemas(){
   tilesSistemas.innerHTML='';
   Object.keys(HIERARQUIA).forEach(sys=>{
     const t = el('div',{class:'tile', tabindex:"0", role:"button", 'data-sys':sys});
     t.innerHTML = `<div class="icon">${sysIcon(sys)}</div>
                    <div style="flex:1"><div class="title">${sys}</div>
-                   <div class="hint">Clique para selecionar</div></div>
-                   <input type="radio" name="sys">`;
+                   <div class="hint">Clique para selecionar</div></div>`;
     t.addEventListener('click', ()=>selectSistema(sys,t));
     t.addEventListener('keypress', e=>{ if(e.key==='Enter'||e.key===' ') selectSistema(sys,t); });
     tilesSistemas.appendChild(t);
@@ -302,76 +297,61 @@ function renderSistemas(){
 }
 function selectSistema(sys, tile){
   SYS = sys;
+  SUB = null; COMP = null;
   [...tilesSistemas.children].forEach(c=>c.classList.remove('active'));
   tile.classList.add('active');
-  SUBS_MARKED = new Set();
   renderSubSistemas();
   renderComponentes();
 }
 function renderSubSistemas(){
-  subsBox.innerHTML=''; subsSel.innerHTML='';
+  subsBox.innerHTML='';
   if(!SYS) return;
   const subs = Object.keys(HIERARQUIA[SYS]);
   subs.forEach(sub=>{
-    const t = el('div',{class:'tile', tabindex:"0", role:"checkbox", 'data-sub':sub});
+    const t = el('div',{class:'tile', tabindex:"0", role:"button", 'data-sub':sub});
     t.innerHTML = `<div class="icon">${sysIcon(SYS)}</div>
-                   <div style="flex:1"><div class="title">${sub}</div>
-                   <div class="hint">Clique para marcar</div></div>
-                   <input type="checkbox">`;
+                   <div style=\"flex:1\"><div class=\"title\">${sub}</div>
+                   <div class=\"hint\">Clique para selecionar</div>
+                   <div class=\"sub-inputs\"><input type=\"number\" class=\"sub-val\" placeholder=\"Valor\" value=\"0\"></div></div>`;
+    if(SUB===sub) t.classList.add('active');
     function toggle(){
-      const chk = t.querySelector('input[type=checkbox]');
-      chk.checked = !chk.checked;
-      t.classList.toggle('active', chk.checked);
-      if(chk.checked) SUBS_MARKED.add(sub); else SUBS_MARKED.delete(sub);
-      renderSubsSel();
-      renderComponentes();
+      if(SUB && SUB!==sub) return;
+      if(SUB===sub){ SUB=null; t.classList.remove('active'); compsBox.innerHTML=''; }
+      else { SUB=sub; [...subsBox.children].forEach(c=>c.classList.remove('active')); t.classList.add('active'); renderComponentes(); }
     }
-    t.addEventListener('click', toggle);
+    t.addEventListener('click', e=>{ if(e.target.closest('.sub-inputs')) return; toggle(); });
     t.addEventListener('keypress', e=>{ if(e.key==='Enter'||e.key===' ') toggle(); });
     subsBox.appendChild(t);
   });
   applyFilterSub();
 }
-function renderSubsSel(){
-  subsSel.innerHTML='';
-  [...SUBS_MARKED].forEach(s=> subsSel.append(el('span',{class:'chip'}, s)));
-}
 function renderComponentes(){
   compsBox.innerHTML='';
-  if(!SYS || SUBS_MARKED.size===0) return;
-  const selectedSubs = [...SUBS_MARKED];
-  selectedSubs.forEach(sub=>{
-    (HIERARQUIA[SYS][sub]||[]).forEach(comp=>{
-      const c = el('div',{class:'comp', 'data-sub':sub, 'data-comp':comp});
-      c.innerHTML = `<div class="icon">${sysIcon(SYS)}</div>
-                     <div style="flex:1"><div class="title">${comp}</div>
-                     <div class="hint">${sub}</div>
-                     <div class="inputs">
-                       <input type="number" class="qtd" placeholder="Qtd" value="1">
-                       <input class="obs" placeholder="Obs">
-                       <input type="number" class="val" placeholder="Valor" value="0">
-                     </div>
-                     </div>
-                     <input type="checkbox">`;
-      c.addEventListener('click', e=>{
-        if(e.target.classList.contains('qtd')||e.target.classList.contains('obs')||e.target.classList.contains('val')) return;
-        const chk=c.querySelector('input[type=checkbox]');
-        if(e.target.type==='checkbox'){
-          c.classList.toggle('active', chk.checked);
-        }else{
-          chk.checked=!chk.checked;
-          c.classList.toggle('active', chk.checked);
-        }
-      });
-      compsBox.appendChild(c);
+  if(!SYS || !SUB) return;
+  (HIERARQUIA[SYS][SUB]||[]).forEach(comp=>{
+    const c = el('div',{class:'comp', 'data-comp':comp, 'data-sub':SUB});
+    c.innerHTML = `<div class="icon">${sysIcon(SYS)}</div>
+                   <div style="flex:1"><div class="title">${comp}</div>
+                   <div class="hint">${SUB}</div>
+                   <div class="inputs">
+                     <input type="number" class="qtd" placeholder="Qtd" value="1">
+                     <input class="obs" placeholder="Obs">
+                     <input type="number" class="val" placeholder="Valor" value="0">
+                   </div>
+                   </div>`;
+    if(COMP===comp) c.classList.add('active');
+    c.addEventListener('click', e=>{
+      if(e.target.closest('.inputs')) return;
+      if(COMP && COMP!==comp) return;
+      if(COMP===comp){ COMP=null; c.classList.remove('active'); }
+      else { COMP=comp; [...compsBox.children].forEach(x=>x.classList.remove('active')); c.classList.add('active'); }
     });
+    compsBox.appendChild(c);
   });
   applyFilterComp();
 }
 
-/* Filtros e botões de seleção rápida */
-document.getElementById('btnSubAll').onclick = ()=>{ if(!SYS) return; Object.keys(HIERARQUIA[SYS]).forEach(s=>SUBS_MARKED.add(s)); renderSubSistemas(); [...subsBox.children].forEach(t=>{ t.querySelector('input').checked=true; t.classList.add('active'); }); renderSubsSel(); renderComponentes(); };
-document.getElementById('btnSubNone').onclick = ()=>{ SUBS_MARKED.clear(); renderSubSistemas(); renderComponentes(); };
+/* Filtros */
 function applyFilterSub(){
   const q = (filtroSub.value||'').toLowerCase();
   [...subsBox.children].forEach(t=>{
@@ -388,8 +368,6 @@ function applyFilterComp(){
 }
 filtroSub.addEventListener('input', applyFilterSub);
 filtroComp.addEventListener('input', applyFilterComp);
-document.getElementById('btnCompAll').onclick = ()=>{ [...compsBox.children].forEach(c=>{ if(c.style.display!=='none'){ const chk=c.querySelector('input[type=checkbox]'); chk.checked=true; c.classList.add('active'); } }); };
-document.getElementById('btnCompNone').onclick = ()=>{ [...compsBox.children].forEach(c=>{ const chk=c.querySelector('input[type=checkbox]'); chk.checked=false; c.classList.remove('active'); }); };
 
 /* ======= Itens (linhas) ======= */
 const itemsEl = document.getElementById('items');
@@ -463,20 +441,20 @@ itemsEl.appendChild(createItemRow()); updateTotals();
 
 /* ======= Adição em lote ======= */
 document.getElementById('btn-add-batch').addEventListener('click', ()=>{
-  const selected = [...compsBox.children].filter(c=> c.querySelector('input[type=checkbox]').checked && c.style.display!=='none');
-  selected.forEach(c=>{
-    const sub = c.getAttribute('data-sub');
-    const comp = c.getAttribute('data-comp');
-    const tipo = 'Peça';
-    const desc = c.querySelector('.obs').value;
-    const qtd  = parseFloat(c.querySelector('.qtd').value || '1');
-    const preco= parseFloat(c.querySelector('.val').value || '0');
-    const un   = 'UN';
-    const base = { sistema:SYS, sub, comp, tipo, serv:(tipo==='Peça')?'Troca/Substituição':'Teste funcional', desc, qtd, un, preco };
-    itemsEl.appendChild(createItemRow(base));
-  });
+  const c = compsBox.querySelector('.comp.active');
+  if(!c) return;
+  const sub = c.getAttribute('data-sub');
+  const comp = c.getAttribute('data-comp');
+  const tipo = 'Peça';
+  const desc = c.querySelector('.obs').value;
+  const qtd  = parseFloat(c.querySelector('.qtd').value || '1');
+  const preco= parseFloat(c.querySelector('.val').value || '0');
+  const un   = 'UN';
+  const base = { sistema:SYS, sub, comp, tipo, serv:(tipo==='Peça')?'Troca/Substituição':'Teste funcional', desc, qtd, un, preco };
+  itemsEl.appendChild(createItemRow(base));
   updateTotals();
-  [...compsBox.children].forEach(c=>{ c.querySelector('input[type=checkbox]').checked=false; c.classList.remove('active'); });
+  c.classList.remove('active');
+  COMP = null;
 });
 
 /* ======= Exportar / Salvar / Carregar ======= */
