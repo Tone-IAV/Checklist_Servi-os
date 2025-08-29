@@ -10,22 +10,23 @@
     --bg:#f7fafc; --text:#0f172a; --muted:#64748b; --line:#e2e8f0; --card:#ffffff;
     --primary:#2563eb; --primary-2:#60a5fa; --ok:#16a34a; --warn:#d97706; --bad:#ef4444;
     --radius:14px;
+    font-size:20px;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter, system-ui, Segoe UI, Roboto, Arial}
+  body{margin:0;background:var(--bg);color:var(--text);font:1rem/1.5 Inter, system-ui, Segoe UI, Roboto, Arial}
   .wrap{width:100%;max-width:none;margin:0;padding:16px}
   header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
-  header h1{font-size:1.3rem;margin:0}
+  header h1{font-size:2rem;margin:0}
   .badge{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;padding:8px 12px;border-radius:999px;font-weight:700}
-  .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:12px}
-  .mini{font-size:12px;color:var(--muted)}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:1rem}
+  .mini{font-size:1rem;color:var(--muted)}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
   .section-title{margin:0 0 10px 0;font-weight:700}
   .grid{display:grid;gap:10px}
   .g2{grid-template-columns: repeat(2, minmax(0,1fr))}
   .g3{grid-template-columns: repeat(3, minmax(0,1fr))}
   .g4{grid-template-columns: repeat(4, minmax(0,1fr))}
-  label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+  label{font-size:1rem;color:var(--muted);display:block;margin-bottom:6px}
   input, select, textarea{
     width:100%;background:#fff;border:1px solid #dbe6f1;color:var(--text);
     border-radius:12px;padding:10px 12px;outline:none;transition:.2s;
@@ -39,12 +40,12 @@
   .toolbar{display:flex;flex-wrap:wrap;gap:8px}
   .divider{height:1px;background:var(--line);margin:12px 0}
   .items-head, .item-row{display:grid;grid-template-columns:1.1fr 1.1fr 1.2fr 0.8fr 1.1fr 1.3fr 0.7fr 0.8fr 1fr 0.6fr;gap:8px}
-  .items-head{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .items-head{font-size:1rem;color:var(--muted);margin-bottom:6px}
   .item-row{margin-bottom:8px}
   .item-actions{display:flex;gap:6px}
   .totals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
   .kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px}
-  .kpi .k{font-size:12px;color:var(--muted)}
+  .kpi .k{font-size:1rem;color:var(--muted)}
   .kpi .v{font-weight:700}
   /* --------- Seleção Visual (cards) --------- */
   .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
@@ -56,7 +57,7 @@
   @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
   .tile .icon{width:64px;height:64px;flex:0 0 64px;border-radius:10px;display:grid;place-items:center;background:#eef5ff;border:1px solid #d4e4ff}
   .tile .title{font-weight:700}
-  .tile .hint{font-size:12px;color:var(--muted)}
+  .tile .hint{font-size:1rem;color:var(--muted)}
   .tile .sub-inputs{display:none;margin-top:6px}
   .tile.active{border-color:#2563eb; background:#f5f9ff}
   .tile.active .sub-inputs{display:block;animation:fadeIn .2s ease}
@@ -74,8 +75,8 @@
   .comp .inputs input{flex:1;border:1px solid #dbe6f1;border-radius:8px;padding:6px}
   .comp .inputs input.qtd{flex:0 0 60px}
   .comp .inputs input.val{flex:0 0 80px}
-  .comp .hint{font-size:12px;color:var(--muted)}
-  .footer-note{font-size:12px;color:var(--muted)}
+  .comp .hint{font-size:1rem;color:var(--muted)}
+  .footer-note{font-size:1rem;color:var(--muted)}
   @media (max-width:900px){
     .tiles{grid-template-columns:1fr 1fr}
     .comp-grid{grid-template-columns:1fr}
@@ -282,8 +283,7 @@ const filtroSub = document.getElementById('filtroSub');
 const filtroComp = document.getElementById('filtroComp');
 
 let SYS = null;
-let SUB = null;
-let COMP = null;
+const SUBS = new Set();
 function renderSistemas(){
   tilesSistemas.innerHTML='';
   Object.keys(HIERARQUIA).forEach(sys=>{
@@ -299,7 +299,8 @@ function renderSistemas(){
 function selectSistema(sys, tile){
   if(SYS === sys){
     if(confirm('Tem certeza que deseja desmarcar o item e subitens?')){
-      SYS = null; SUB = null; COMP = null;
+      SYS = null;
+      SUBS.clear();
       [...tilesSistemas.children].forEach(c=>{ c.classList.remove('active'); c.style.display=''; });
       renderSubSistemas();
       renderComponentes();
@@ -307,7 +308,7 @@ function selectSistema(sys, tile){
     return;
   }
   SYS = sys;
-  SUB = null; COMP = null;
+  SUBS.clear();
   [...tilesSistemas.children].forEach(c=>{
     c.classList.remove('active');
     if(c !== tile) c.style.display='none';
@@ -327,11 +328,16 @@ function renderSubSistemas(){
                    <div style=\"flex:1\"><div class=\"title\">${sub}</div>
                    <div class=\"hint\">Clique para selecionar</div>
                    <div class=\"sub-inputs\"><input type=\"number\" class=\"sub-val\" placeholder=\"Valor\" value=\"0\"></div></div>`;
-    if(SUB===sub) t.classList.add('active');
+    if(SUBS.has(sub)) t.classList.add('active');
     function toggle(){
-      if(SUB && SUB!==sub) return;
-      if(SUB===sub){ SUB=null; t.classList.remove('active'); compsBox.innerHTML=''; }
-      else { SUB=sub; [...subsBox.children].forEach(c=>c.classList.remove('active')); t.classList.add('active'); renderComponentes(); }
+      if(SUBS.has(sub)){
+        SUBS.delete(sub);
+        t.classList.remove('active');
+      }else{
+        SUBS.add(sub);
+        t.classList.add('active');
+      }
+      renderComponentes();
     }
     t.addEventListener('click', e=>{ if(e.target.closest('.sub-inputs')) return; toggle(); });
     t.addEventListener('keypress', e=>{ if(e.key==='Enter'||e.key===' ') toggle(); });
@@ -341,26 +347,22 @@ function renderSubSistemas(){
 }
 function renderComponentes(){
   compsBox.innerHTML='';
-  if(!SYS || !SUB) return;
-  (HIERARQUIA[SYS][SUB]||[]).forEach(comp=>{
-    const c = el('div',{class:'comp', 'data-comp':comp, 'data-sub':SUB});
-    c.innerHTML = `<div class="icon">${sysIcon(SYS)}</div>
-                   <div style="flex:1"><div class="title">${comp}</div>
-                   <div class="hint">${SUB}</div>
-                   <div class="inputs">
-                     <input type="number" class="qtd" placeholder="Qtd" value="1">
-                     <input class="obs" placeholder="Obs">
-                     <input type="number" class="val" placeholder="Valor" value="0">
-                   </div>
-                   </div>`;
-    if(COMP===comp) c.classList.add('active');
-    c.addEventListener('click', e=>{
-      if(e.target.closest('.inputs')) return;
-      if(COMP && COMP!==comp) return;
-      if(COMP===comp){ COMP=null; c.classList.remove('active'); }
-      else { COMP=comp; [...compsBox.children].forEach(x=>x.classList.remove('active')); c.classList.add('active'); }
+  if(!SYS || SUBS.size===0) return;
+  SUBS.forEach(sub=>{
+    (HIERARQUIA[SYS][sub]||[]).forEach(comp=>{
+      const c = el('div',{class:'comp', 'data-comp':comp, 'data-sub':sub});
+      c.innerHTML = `<div class="icon">${sysIcon(SYS)}</div>
+                     <div style="flex:1"><div class="title">${comp}</div>
+                     <div class="hint">${sub}</div>
+                     <div class="inputs">
+                       <input type="number" class="qtd" placeholder="Qtd" value="1">
+                       <input class="obs" placeholder="Obs">
+                       <input type="number" class="val" placeholder="Valor" value="0">
+                     </div>
+                     </div>`;
+      c.addEventListener('click', e=>{ if(e.target.closest('.inputs')) return; c.classList.toggle('active'); });
+      compsBox.appendChild(c);
     });
-    compsBox.appendChild(c);
   });
   applyFilterComp();
 }
@@ -454,21 +456,22 @@ document.getElementById('btn-add').addEventListener('click', ()=>{ itemsEl.appen
 
 /* ======= Adição em lote ======= */
 document.getElementById('btn-add-batch').addEventListener('click', ()=>{
-  const c = compsBox.querySelector('.comp.active');
-  if(!c) return;
-  const sub = c.getAttribute('data-sub');
-  const comp = c.getAttribute('data-comp');
-  const tipo = 'Peça';
-  const desc = c.querySelector('.obs').value;
-  const qtd  = parseFloat(c.querySelector('.qtd').value || '1');
-  const preco= parseFloat(c.querySelector('.val').value || '0');
-  const un   = 'UN';
-  const base = { sistema:SYS, sub, comp, tipo, serv:(tipo==='Peça')?'Troca/Substituição':'Teste funcional', desc, qtd, un, preco };
-  itemsEl.appendChild(createItemRow(base));
+  const ativos = compsBox.querySelectorAll('.comp.active');
+  if(!ativos.length) return;
+  ativos.forEach(c=>{
+    const sub = c.getAttribute('data-sub');
+    const comp = c.getAttribute('data-comp');
+    const tipo = 'Peça';
+    const desc = c.querySelector('.obs').value;
+    const qtd  = parseFloat(c.querySelector('.qtd').value || '1');
+    const preco= parseFloat(c.querySelector('.val').value || '0');
+    const un   = 'UN';
+    const base = { sistema:SYS, sub, comp, tipo, serv:(tipo==='Peça')?'Troca/Substituição':'Teste funcional', desc, qtd, un, preco };
+    itemsEl.appendChild(createItemRow(base));
+    c.classList.remove('active');
+  });
   updateTotals();
   document.getElementById('itemsCard').style.display='block';
-  c.classList.remove('active');
-  COMP = null;
 });
 
 /* ======= Exportar / Salvar / Carregar ======= */
