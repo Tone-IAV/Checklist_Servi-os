@@ -567,25 +567,33 @@ document.getElementById('btn-save').addEventListener('click', ()=>{
     itens:getRows(),
     totais:{ pecas:document.getElementById('t-pecas').textContent, serv:document.getElementById('t-serv').textContent, acresc:Number(document.getElementById('t-acresc').value||0), geral:document.getElementById('t-geral').textContent }
   };
-  download(`OS_${payload.meta.os||'sem-numero'}.json`, JSON.stringify(payload,null,2), 'application/json');
+  google.script.run
+    .withSuccessHandler(()=>alert('Dados salvos!'))
+    .withFailureHandler(err=>alert('Erro ao salvar: '+err.message))
+    .saveOS(payload);
 });
+
+function applyData(data){
+  document.getElementById('f-os').value=data?.meta?.os||'';
+  document.getElementById('f-data-entrada').value=data?.meta?.entrada||'';
+  document.getElementById('f-data-entrega').value=data?.meta?.entrega||'';
+  document.getElementById('f-resp').value=data?.meta?.resp||'';
+  document.getElementById('f-cliente').value=data?.cliente?.nome||'';
+  document.getElementById('f-fone').value=data?.cliente?.fone||'';
+  document.getElementById('f-placa').value=data?.cliente?.placa||'';
+  itemsEl.innerHTML='';
+  (data?.itens||[]).forEach(it=> itemsEl.appendChild(createItemRow(it)));
+  document.getElementById('t-acresc').value = data?.totais?.acresc ?? 0;
+  updateTotals();
+}
+
 document.getElementById('btn-load').addEventListener('click', ()=>{
-  const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json';
-  inp.addEventListener('change', async ()=>{
-    const f=inp.files[0]; if(!f) return; const data=JSON.parse(await f.text());
-    document.getElementById('f-os').value=data?.meta?.os||'';
-    document.getElementById('f-data-entrada').value=data?.meta?.entrada||'';
-    document.getElementById('f-data-entrega').value=data?.meta?.entrega||'';
-    document.getElementById('f-resp').value=data?.meta?.resp||'';
-    document.getElementById('f-cliente').value=data?.cliente?.nome||'';
-    document.getElementById('f-fone').value=data?.cliente?.fone||'';
-    document.getElementById('f-placa').value=data?.cliente?.placa||'';
-    itemsEl.innerHTML='';
-    (data?.itens||[]).forEach(it=> itemsEl.appendChild(createItemRow(it)));
-    document.getElementById('t-acresc').value = data?.totais?.acresc ?? 0;
-    updateTotals();
-  });
-  inp.click();
+  const os = prompt('Número da OS a carregar:');
+  if(!os) return;
+  google.script.run
+    .withSuccessHandler(res=>{ if(res) applyData(res); else alert('OS não encontrada'); })
+    .withFailureHandler(err=>alert('Erro ao carregar: '+err.message))
+    .loadOS(os);
 });
 
 /* start */
