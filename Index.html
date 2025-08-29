@@ -149,6 +149,7 @@
     <!-- Opções & Prévia -->
     <div class="divider"></div>
     <div class="toolbar" style="justify-content:flex-end">
+      <button class="btn" id="btn-finalizar">Finalizar checklist</button>
       <button class="btn primary" id="btn-add-batch">Adicionar itens</button>
     </div>
   </div>
@@ -296,9 +297,22 @@ function renderSistemas(){
   });
 }
 function selectSistema(sys, tile){
+  if(SYS === sys){
+    if(confirm('Tem certeza que deseja desmarcar o item e subitens?')){
+      SYS = null; SUB = null; COMP = null;
+      [...tilesSistemas.children].forEach(c=>{ c.classList.remove('active'); c.style.display=''; });
+      renderSubSistemas();
+      renderComponentes();
+    }
+    return;
+  }
   SYS = sys;
   SUB = null; COMP = null;
-  [...tilesSistemas.children].forEach(c=>c.classList.remove('active'));
+  [...tilesSistemas.children].forEach(c=>{
+    c.classList.remove('active');
+    if(c !== tile) c.style.display='none';
+  });
+  tile.style.display='';
   tile.classList.add('active');
   renderSubSistemas();
   renderComponentes();
@@ -437,7 +451,6 @@ function updateTotals(){
 }
 document.getElementById('t-acresc').addEventListener('input', updateTotals);
 document.getElementById('btn-add').addEventListener('click', ()=>{ itemsEl.appendChild(createItemRow()); updateTotals(); });
-itemsEl.appendChild(createItemRow()); updateTotals();
 
 /* ======= Adição em lote ======= */
 document.getElementById('btn-add-batch').addEventListener('click', ()=>{
@@ -453,6 +466,7 @@ document.getElementById('btn-add-batch').addEventListener('click', ()=>{
   const base = { sistema:SYS, sub, comp, tipo, serv:(tipo==='Peça')?'Troca/Substituição':'Teste funcional', desc, qtd, un, preco };
   itemsEl.appendChild(createItemRow(base));
   updateTotals();
+  document.getElementById('itemsCard').style.display='block';
   c.classList.remove('active');
   COMP = null;
 });
@@ -468,18 +482,23 @@ document.getElementById('btn-export').addEventListener('click', ()=>{
   ].join(';')));
   download(`OS_${document.getElementById('f-os').value||'itens'}.csv`, lines.join('\n'), 'text/csv;charset=utf-8;');
 });
-document.getElementById('btn-save').addEventListener('click', ()=>{
-  const payload = {
+function buildPayload(){
+  return {
     meta:{ os:document.getElementById('f-os').value, entrada:document.getElementById('f-data-entrada').value, entrega:document.getElementById('f-data-entrega').value, resp:document.getElementById('f-resp').value, status:document.getElementById('osStatus').textContent },
     cliente:{ nome:document.getElementById('f-cliente').value, fone:document.getElementById('f-fone').value, placa:document.getElementById('f-placa').value },
     itens:getRows(),
     totais:{ pecas:document.getElementById('t-pecas').textContent, serv:document.getElementById('t-serv').textContent, acresc:Number(document.getElementById('t-acresc').value||0), geral:document.getElementById('t-geral').textContent }
   };
+}
+function saveChecklist(msg='Dados salvos!'){
+  const payload = buildPayload();
   google.script.run
-    .withSuccessHandler(()=>alert('Dados salvos!'))
+    .withSuccessHandler(()=>alert(msg))
     .withFailureHandler(err=>alert('Erro ao salvar: '+err.message))
     .saveOS(payload);
-});
+}
+document.getElementById('btn-save').addEventListener('click', ()=>saveChecklist('Dados salvos!'));
+document.getElementById('btn-finalizar').addEventListener('click', ()=>saveChecklist('Checklist finalizado!'));
 
 function applyData(data){
   document.getElementById('f-os').value=data?.meta?.os||'';
@@ -491,6 +510,7 @@ function applyData(data){
   document.getElementById('f-placa').value=data?.cliente?.placa||'';
   itemsEl.innerHTML='';
   (data?.itens||[]).forEach(it=> itemsEl.appendChild(createItemRow(it)));
+  document.getElementById('itemsCard').style.display = (data?.itens?.length)?'block':'none';
   document.getElementById('t-acresc').value = data?.totais?.acresc ?? 0;
   updateTotals();
 }
