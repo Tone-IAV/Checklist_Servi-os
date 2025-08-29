@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OS Automotiva — Seleção Visual</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+<style>
+  :root{
+    --bg:#f7fafc; --text:#0f172a; --muted:#64748b; --line:#e2e8f0; --card:#ffffff;
+    --primary:#2563eb; --primary-2:#60a5fa; --ok:#16a34a; --warn:#d97706; --bad:#ef4444;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter, system-ui, Segoe UI, Roboto, Arial}
+  .wrap{max-width:1180px;margin:28px auto;padding:0 16px}
+  header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
+  header h1{font-size:1.3rem;margin:0}
+  .badge{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;padding:8px 12px;border-radius:999px;font-weight:700}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:12px}
+  .mini{font-size:12px;color:var(--muted)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
+  .section-title{margin:0 0 10px 0;font-weight:700}
+  .grid{display:grid;gap:10px}
+  .g2{grid-template-columns: repeat(2, minmax(0,1fr))}
+  .g3{grid-template-columns: repeat(3, minmax(0,1fr))}
+  .g4{grid-template-columns: repeat(4, minmax(0,1fr))}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+  input, select, textarea{
+    width:100%;background:#fff;border:1px solid #dbe6f1;color:var(--text);
+    border-radius:12px;padding:10px 12px;outline:none;transition:.2s;
+  }
+  input:focus, select:focus, textarea:focus{border-color:#93c5fd; box-shadow:0 0 0 3px #93c5fd55}
+  textarea{min-height:80px;resize:vertical}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:#f1f5f9;border:1px solid #dbe6f1;color:#0f172a;padding:10px 14px;border-radius:12px;cursor:pointer}
+  .btn:hover{background:#e9eef5}
+  .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-color:transparent}
+  .btn.ghost{background:#fff}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px}
+  .divider{height:1px;background:var(--line);margin:12px 0}
+  .items-head, .item-row{display:grid;grid-template-columns:1.1fr 1.1fr 1.2fr 0.8fr 1.1fr 1.3fr 0.7fr 0.8fr 1fr 0.6fr;gap:8px}
+  .items-head{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .item-row{margin-bottom:8px}
+  .item-actions{display:flex;gap:6px}
+  .totals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px}
+  .kpi .k{font-size:12px;color:var(--muted)}
+  .kpi .v{font-weight:700}
+  /* --------- Seleção Visual (cards) --------- */
+  .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .tile{
+    display:flex;align-items:center;gap:12px;background:#ffffff;border:2px solid #dbe6f1;border-radius:16px;
+    padding:14px; cursor:pointer; min-height:84px; transition:.15s;
+  }
+  .tile:hover{border-color:#93c5fd; box-shadow:0 4px 16px #0f172a0d}
+  .tile input{width:auto;transform:scale(1.4)}
+  .tile .icon{width:44px;height:44px;flex:0 0 44px;border-radius:10px;display:grid;place-items:center;background:#eef5ff;border:1px solid #d4e4ff}
+  .tile .title{font-weight:700}
+  .tile .hint{font-size:12px;color:var(--muted)}
+  .tile.active{border-color:#2563eb; background:#f5f9ff}
+  .row-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .search{display:flex;gap:8px;align-items:center}
+  .search input{flex:1}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{background:#eef5ff;border:1px solid #d4e4ff; color:#0f172a; border-radius:999px;padding:6px 10px;font-size:12px}
+  .list-panel{border:1px dashed #cbd5e1;border-radius:12px;padding:10px;background:#fbfeff;max-height:260px;overflow:auto}
+  .comp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .comp{display:flex;align-items:center;gap:10px;border:2px solid #e2e8f0;border-radius:12px;padding:10px;min-height:64px;background:#fff;cursor:pointer}
+  .comp:hover{border-color:#93c5fd}
+  .comp input{width:auto;transform:scale(1.3)}
+  .comp .icon{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;background:#f4f7ff;border:1px solid #dbe6f1}
+  .footer-note{font-size:12px;color:var(--muted)}
+  @media (max-width:900px){
+    .tiles{grid-template-columns:1fr 1fr}
+    .comp-grid{grid-template-columns:1fr}
+    .items-head, .item-row{grid-template-columns:1fr 1fr 1fr 0.9fr 1.2fr 1fr 0.7fr 0.9fr 1fr 0.6fr}
+  }
+  @media print{ .btn, .toolbar, .list-panel, .tiles, .row-actions, .search{display:none !important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="badge">Ordem de Serviço</span>
+    <h1>OS <span id="osNumber"></span></h1>
+    <span class="pill" id="osStatus">Aberta</span>
+    <span class="mini">Criada em <span id="osDate"></span></span>
+  </header>
+
+  <!-- DADOS BÁSICOS -->
+  <div class="card">
+    <h3 class="section-title">Dados</h3>
+    <div class="grid g4">
+      <div><label>Nº OS</label><input id="f-os" placeholder="(auto)"/></div>
+      <div><label>Entrada</label><input type="date" id="f-data-entrada"/></div>
+      <div><label>Entrega (prev.)</label><input type="date" id="f-data-entrega"/></div>
+      <div><label>Responsável</label><input id="f-resp" placeholder="Mecânico/Oficina"/></div>
+    </div>
+    <div class="grid g3" style="margin-top:8px">
+      <div><label>Cliente</label><input id="f-cliente"/></div>
+      <div><label>Telefone</label><input id="f-fone"/></div>
+      <div><label>Placa</label><input id="f-placa" placeholder="AAA0A00" pattern="[A-Z]{3}[0-9][A-Z0-9][0-9]{2}"/></div>
+    </div>
+  </div>
+
+  <!-- ADICIONADOR VISUAL — PASSO A PASSO -->
+  <div class="card">
+    <h3 class="section-title">Adicionar itens (visual e em lote)</h3>
+
+    <!-- Passo 1: Sistemas -->
+    <label>1) Escolha o <b>Sistema</b></label>
+    <div id="tiles-sistemas" class="tiles" aria-label="Sistemas"></div>
+
+    <!-- Passo 2: SubSistemas -->
+    <div class="divider"></div>
+    <div class="row-actions">
+      <div class="search" style="flex:1">
+        <label style="margin:0;color:var(--muted)">2) Marque SubSistemas</label>
+        <input id="filtroSub" placeholder="Buscar SubSistemas…" />
+      </div>
+      <button class="btn" id="btnSubAll">Selecionar tudo</button>
+      <button class="btn" id="btnSubNone">Limpar</button>
+    </div>
+    <div id="panel-subs" class="list-panel">
+      <div id="subs" class="tiles"></div>
+    </div>
+    <div class="chips" id="subsSel"></div>
+
+    <!-- Passo 3: Componentes -->
+    <div class="divider"></div>
+    <div class="row-actions">
+      <div class="search" style="flex:1">
+        <label style="margin:0;color:var(--muted)">3) Marque Componentes</label>
+        <input id="filtroComp" placeholder="Buscar Componentes… (ex.: pastilha, correia)" />
+      </div>
+      <button class="btn" id="btnCompAll">Selecionar todos (filtrados)</button>
+      <button class="btn" id="btnCompNone">Limpar</button>
+    </div>
+    <div id="panel-comps" class="list-panel">
+      <div id="comps" class="comp-grid"></div>
+    </div>
+
+    <!-- Opções & Prévia -->
+    <div class="grid g4" style="margin-top:10px">
+      <div>
+        <label>Tipo base</label>
+        <select id="l-tipo"><option>Peça</option><option>Serviço</option></select>
+      </div>
+      <div>
+        <label>Qtd padrão</label>
+        <input id="l-qtd" type="number" step="0.01" value="1"/>
+      </div>
+      <div>
+        <label>Unidade padrão</label>
+        <select id="l-un"><option>UN</option><option>H</option><option>L</option><option>KG</option><option>KIT</option></select>
+      </div>
+      <div>
+        <label>Preço padrão (R$)</label>
+        <input id="l-preco" type="number" step="0.01" value="0"/>
+      </div>
+    </div>
+    <div class="row-actions" style="margin-top:6px">
+      <label class="btn"><input id="l-completo" type="checkbox" style="transform:scale(1.2);margin-right:8px"> Completo (conjunto do SubSistema)</label>
+      <label class="btn"><input id="l-auto-serv" type="checkbox" style="transform:scale(1.2);margin-right:8px" checked> Gerar serviço automático para peças</label>
+    </div>
+
+    <div class="divider"></div>
+    <div class="toolbar" style="justify-content:space-between">
+      <div class="footer-note">Dica: clique nos cards grandes para marcar/desmarcar. Itens filtrados = seleção mais rápida.</div>
+      <div class="toolbar">
+        <button class="btn" id="btn-preview">Pré-visualizar</button>
+        <button class="btn primary" id="btn-add-batch">Adicionar itens</button>
+      </div>
+    </div>
+
+    <div id="previewBox" class="list-panel" style="margin-top:10px; display:none">
+      <table class="preview-table" style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr>
+            <th style="text-align:left;border-bottom:1px solid var(--line);padding:8px">SubSistema</th>
+            <th style="text-align:left;border-bottom:1px solid var(--line);padding:8px">Componente</th>
+            <th style="text-align:left;border-bottom:1px solid var(--line);padding:8px">Peculiaridade</th>
+            <th style="text-align:left;border-bottom:1px solid var(--line);padding:8px">Qtd</th>
+            <th style="text-align:left;border-bottom:1px solid var(--line);padding:8px">Un</th>
+            <th style="text-align:left;border-bottom:1px solid var(--line);padding:8px">Preço</th>
+          </tr>
+        </thead>
+        <tbody id="preview-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ITENS LANÇADOS -->
+  <div class="card">
+    <div class="toolbar" style="justify-content:space-between;align-items:center">
+      <h3 class="section-title" style="margin:0">Itens da OS</h3>
+      <div class="toolbar">
+        <button class="btn" id="btn-add">+ Linha vazia</button>
+        <button class="btn" id="btn-export">Exportar CSV</button>
+        <button class="btn" id="btn-save">Salvar JSON</button>
+        <button class="btn" id="btn-load">Carregar JSON</button>
+      </div>
+    </div>
+
+    <div class="items-head">
+      <div>Sistema</div><div>SubSistema</div><div>Componente</div>
+      <div>Tipo</div><div>Serviço</div><div>Descrição/Peculiaridade</div>
+      <div>Qtd</div><div>Un</div><div>Preço (R$)</div><div></div>
+    </div>
+    <div id="items"></div>
+
+    <div class="divider"></div>
+    <div class="totals">
+      <div class="kpi"><div class="k">Total Peças</div><div class="v" id="t-pecas">R$ 0,00</div></div>
+      <div class="kpi"><div class="k">Total Serviços</div><div class="v" id="t-serv">R$ 0,00</div></div>
+      <div class="kpi"><div class="k">Acréscimos (R$)</div><input id="t-acresc" type="number" step="0.01" value="0"/></div>
+      <div class="kpi"><div class="k">Total Geral</div><div class="v" id="t-geral">R$ 0,00</div></div>
+    </div>
+  </div>
+
+  <div class="mini">Arquivo local. As imagens de referência foram mostradas acima para orientar a seleção (não são baixadas pelo formulário).</div>
+</div>
+
+<script>
+/* ======= Catálogo (igual ao seu) ======= */
+const HIERARQUIA = {
+  "Motor": {"Alimentação (Ar & Combustível)":[
+      "Filtro de ar","Corpo de borboleta","Bicos injetores","Bomba de combustível","Filtro de combustível",
+      "Linha de combustível","Coletor de admissão","Sensor MAP","Sensor MAF","Regulador de pressão"
+    ],
+    "Ignição":["Velas de ignição","Cabos de vela","Bobina(s) de ignição","Módulo de ignição"],
+    "Lubrificação":["Óleo do motor","Filtro de óleo","Cárter","Válvula PCV","Junta do cárter","Retentores"],
+    "Arrefecimento":["Radiador","Ventoinha/ventilador","Bomba d'água","Válvula termostática","Reservatório de expansão","Tampa do radiador/reservatório","Mangueiras de água","Sensor de temperatura","Junta do cabeçote"],
+    "Correias & Comando":["Correia dentada","Corrente de comando","Tensor/Esticador","Polias","Correia de acessórios"],
+    "Escape":["Coletor de escape","Catalisador","Sonda lambda (pré/pós)","Silencioso intermediário","Silencioso traseiro","Junta de escape"],
+    "Vedação":["Junta da tampa de válvulas","Retentor do virabrequim (dianteiro/traseiro)","Juntas diversas"]
+  },
+  "Transmissão/Tração":{"Embreagem (Manual)":["Kit embreagem (disco/platô/rolamento)","Cilindro mestre","Cilindro escravo","Cabo de embreagem"],
+    "Câmbio (Manual/Automatizado/Automático/CVT)":["Óleo do câmbio","Trambulador/linkagem","Retentores do câmbio"],
+    "Semieixos/Homocinéticas":["Semieixo","Junta homocinética","Coifa homocinética"],
+    "Diferencial/Transferência":["Óleo do diferencial","Caixa de transferência (4x4)"]
+  },
+  "Direção":{"Coluna de direção":["Junta cardan da coluna","Trava do volante"],
+    "Caixa/cremalheira":["Caixa de direção","Coifas/guarda-pós","Buchas da caixa","Bomba de direção (hidráulica)","Motor elétrico (EPS)"],
+    "Barras & Terminais":["Barra axial","Terminal de direção","Braço pitman (onde aplicável)"]
+  },
+  "Suspensão":{"Dianteira":["Amortecedor dianteiro","Mola helicoidal dianteira","Coxim/rolamento do amortecedor","Bandeja/bras oscilante","Bucha da bandeja","Pivô de suspensão","Bieleta","Barra estabilizadora","Buchas da barra estabilizadora","Rolamento de roda dianteiro"],
+    "Traseira":["Amortecedor traseiro","Mola traseira","Coxim traseiro","Buchas traseiras","Feixe de molas (utilitários)","Braços/tirantes","Rolamento de roda traseiro"]
+  },
+  "Freios":{"Dianteiro":["Pastilhas de freio dianteiras","Discos de freio dianteiros","Pinça de freio dianteira","Flexível de freio dianteiro"],
+    "Traseiro":["Lonas de freio","Tambor de freio","Cilindro de roda","Pinça traseira (se disco)","Discos traseiros (se aplicável)","Flexível de freio traseiro"],
+    "Hidráulico/Sistema":["Fluido de freio","Cilindro mestre","Servo-freio (hidrovácuo)","Válvula proporcional/reguladora"],
+    "ABS/Estabilidade":["Módulo ABS/ESP","Sensor de roda ABS","Anel reluctor"]
+  },
+  "Pneus & Rodas":{"Conjunto":["Pneu","Roda","Válvula","Calota","Estepe","Parafusos/porcas de roda","Cubo de roda"]},
+  "Elétrica/Eletrônica":{"Carga & Partida":["Bateria","Alternador","Motor de partida","Cabos/terminais de bateria"],
+    "Iluminação/Sinalização":["Faróis (conjunto/lâmpadas)","Lanternas traseiras","DRL","Luzes de freio","Setas/indicadores","Neblina"],
+    "Chicote & Proteção":["Chicote elétrico","Fusíveis","Relés","Caixa de fusíveis"],
+    "Sensores & Atuadores":["Sensor TPS","Sensor ECT (temperatura do motor)","Sensor CKP (rotação)","Sensor CMP (fase)","Atuador de marcha lenta"],
+    "Módulos/Computadores":["ECU do motor","TCU do câmbio","BCM","Módulo ABS","Módulo Airbag","Conector OBD"]
+  },
+  "Ar-Condicionado/Climatização":{"Sistema de A/C":["Compressor","Condensador","Evaporador","Válvula de expansão/orifício","Filtro secador","Filtro de cabine","Motor do ventilador interno","Pressostatos/sensores","Gás refrigerante & óleo do A/C"]},
+  "Carroceria & Fechaduras":{"Aberturas & Vedação":["Capô","Trava do capô","Portas","Porta-malas","Maçanetas","Dobradiças","Borrachas de vedação"],
+    "Vidros & Acionamentos":["Para-brisa","Vidros laterais","Regulador de vidro (elétrico/manual)","Travas elétricas","Retrovisores (espelho/motor)"],
+    "Externo":["Para-choques","Para-lamas","Frisos/defletores","Protetor de cárter"],
+    "Limpeza de Vidros":["Palhetas do limpador","Reservatório do limpador","Motor da bomba do limpador"]
+  },
+  "Segurança & Itens obrigatórios":{"Sistemas":["Cintos de segurança","Airbags","Sensores de colisão","ABS/ESP"],
+    "Itens de emergência":["Triângulo","Macaco","Chave de roda","Kit de primeiros socorros (quando aplicável)"]
+  },
+  "Documentação & Acessórios":{"Documentos & Itens":["CRLV-e (licenciamento)","Manual do proprietário","Chave reserva"],
+    "Acessórios":["Rádio/central multimídia","Alto-falantes","Alarme","Rastreador","Engate","Calhas de chuva","Sensor de estacionamento","Câmera de ré"]
+  },
+  "Diagnóstico & Testes":{"Procedimentos":["Scanner OBD (leitura/limpeza de DTCs)","Teste de compressão","Teste de fuga de CO₂ no arrefecimento","Teste de pressão de combustível","Teste de carga/partida","Vazão de bicos injetores","Alinhamento 3D","Balanceamento de rodas","Teste de rodagem"]}
+};
+const SERVICOS = ["Inspeção visual","Teste funcional","Diagnóstico com scanner","Leitura/limpeza de DTC","Limpeza/descarbonização","Ajuste/Calibração","Troca/Substituição","Reparo/Recondicionamento","Lubrificação","Reaperto/Torque","Sangria (freio/embreagem)","Alinhamento","Balanceamento","Regulagem de faróis","Recarga (bateria/A.C.)","Atualização de software","Regeneração DPF (diesel)","Vedação/Aplicação de junta/cola","Higienização do A.C.","Teste de rodagem/validação"];
+
+/* ======= Utils ======= */
+const fmtBRL = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
+const toNumber = el => { const n = parseFloat(String(el?.value||"").replace(",",".")); return isFinite(n)?n:0; };
+function el(tag, attrs={}, ...children){ const e=document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>{ if(k==='class')e.className=v; else if(k==='html')e.innerHTML=v; else e.setAttribute(k,v); }); children.forEach(c=>e.append(c)); return e; }
+
+/* ======= Header auto ======= */
+(function initHeader(){
+  const now = new Date();
+  document.getElementById('osDate').textContent = now.toLocaleString('pt-BR');
+  const osId = '#' + now.getFullYear().toString().slice(2) + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + '-' + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('osNumber').textContent = osId;
+  document.getElementById('f-os').value = osId.replace('#','');
+  document.getElementById('f-data-entrada').valueAsDate = new Date();
+})();
+
+/* ======= Ícones simples (SVG inline) por Sistema ======= */
+function sysIcon(name){
+  const base = 'style="width:26px;height:26px"';
+  const map = {
+    "Motor": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M3 9h6l2-2h4l3 3v6H3V9Z" stroke="#2563eb" stroke-width="1.5"/><path d="M14 7v3m-8 6h14" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Transmissão/Tração": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="8" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/><circle cx="16" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/><path d="M11 12h2" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Direção": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#2563eb" stroke-width="1.5"/><path d="M12 7v5l4 2" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Suspensão": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M6 7l12 10M6 17L18 7" stroke="#2563eb" stroke-width="1.5"/><rect x="4" y="5" width="4" height="4" stroke="#2563eb" stroke-width="1.5"/><rect x="16" y="15" width="4" height="4" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Freios": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="7" stroke="#2563eb" stroke-width="1.5"/><path d="M12 5a7 7 0 017 7h-5a2 2 0 00-2-2V5Z" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Pneus & Rodas": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#2563eb" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Elétrica/Eletrônica": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h7l-1 8 11-12h-7l1-8Z" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Ar-Condicionado/Climatização": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M12 2v20M4 6l16 12M4 18L20 6" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Carroceria & Fechaduras": `<svg ${base} viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="10" rx="2" stroke="#2563eb" stroke-width="1.5"/><path d="M7 8l3-3h4l3 3" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Segurança & Itens obrigatórios": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4v5c0 4.418-3.582 8-8 8s-8-3.582-8-8V7l8-4Z" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Documentação & Acessórios": `<svg ${base} viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2" stroke="#2563eb" stroke-width="1.5"/><path d="M8 7h8M8 11h8" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Diagnóstico & Testes": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M4 16l4-8 4 8 4-6 4 6" stroke="#2563eb" stroke-width="1.5"/><rect x="3" y="3" width="18" height="4" rx="1" stroke="#2563eb" stroke-width="1.5"/></svg>`
+  };
+  return map[name] || `<svg ${base}></svg>`;
+}
+
+/* ======= Seleção Visual ======= */
+const tilesSistemas = document.getElementById('tiles-sistemas');
+const subsBox = document.getElementById('subs');
+const compsBox = document.getElementById('comps');
+const subsSel = document.getElementById('subsSel');
+const filtroSub = document.getElementById('filtroSub');
+const filtroComp = document.getElementById('filtroComp');
+
+let SYS = null;
+let SUBS_MARKED = new Set();
+function renderSistemas(){
+  tilesSistemas.innerHTML='';
+  Object.keys(HIERARQUIA).forEach(sys=>{
+    const t = el('div',{class:'tile', tabindex:"0", role:"button", 'data-sys':sys});
+    t.innerHTML = `<div class="icon">${sysIcon(sys)}</div>
+                   <div style="flex:1"><div class="title">${sys}</div>
+                   <div class="hint">Clique para selecionar</div></div>
+                   <input type="radio" name="sys">`;
+    t.addEventListener('click', ()=>selectSistema(sys,t));
+    t.addEventListener('keypress', e=>{ if(e.key==='Enter'||e.key===' ') selectSistema(sys,t); });
+    tilesSistemas.appendChild(t);
+  });
+}
+function selectSistema(sys, tile){
+  SYS = sys;
+  [...tilesSistemas.children].forEach(c=>c.classList.remove('active'));
+  tile.classList.add('active');
+  SUBS_MARKED = new Set();
+  renderSubSistemas();
+  renderComponentes();
+}
+function renderSubSistemas(){
+  subsBox.innerHTML=''; subsSel.innerHTML='';
+  if(!SYS) return;
+  const subs = Object.keys(HIERARQUIA[SYS]);
+  subs.forEach(sub=>{
+    const t = el('div',{class:'tile', tabindex:"0", role:"checkbox", 'data-sub':sub});
+    t.innerHTML = `<div class="icon">${sysIcon(SYS)}</div>
+                   <div style="flex:1"><div class="title">${sub}</div>
+                   <div class="hint">Clique para marcar</div></div>
+                   <input type="checkbox">`;
+    function toggle(){
+      const chk = t.querySelector('input[type=checkbox]');
+      chk.checked = !chk.checked;
+      t.classList.toggle('active', chk.checked);
+      if(chk.checked) SUBS_MARKED.add(sub); else SUBS_MARKED.delete(sub);
+      renderSubsSel();
+      renderComponentes();
+    }
+    t.addEventListener('click', toggle);
+    t.addEventListener('keypress', e=>{ if(e.key==='Enter'||e.key===' ') toggle(); });
+    subsBox.appendChild(t);
+  });
+  applyFilterSub();
+}
+function renderSubsSel(){
+  subsSel.innerHTML='';
+  [...SUBS_MARKED].forEach(s=> subsSel.append(el('span',{class:'chip'}, s)));
+}
+function renderComponentes(){
+  compsBox.innerHTML='';
+  if(!SYS || SUBS_MARKED.size===0) return;
+  const selectedSubs = [...SUBS_MARKED];
+  selectedSubs.forEach(sub=>{
+    (HIERARQUIA[SYS][sub]||[]).forEach(comp=>{
+      const c = el('div',{class:'comp', 'data-sub':sub, 'data-comp':comp});
+      c.innerHTML = `<div class="icon">${sysIcon(SYS)}</div>
+                     <div style="flex:1"><div class="title">${comp}</div>
+                     <div class="hint">${sub}</div></div>
+                     <input type="checkbox">`;
+      c.addEventListener('click', ()=>{
+        const chk=c.querySelector('input'); chk.checked=!chk.checked;
+        c.classList.toggle('active', chk.checked);
+      });
+      compsBox.appendChild(c);
+    });
+  });
+  applyFilterComp();
+}
+
+/* Filtros e botões de seleção rápida */
+document.getElementById('btnSubAll').onclick = ()=>{ if(!SYS) return; Object.keys(HIERARQUIA[SYS]).forEach(s=>SUBS_MARKED.add(s)); renderSubSistemas(); [...subsBox.children].forEach(t=>{ t.querySelector('input').checked=true; t.classList.add('active'); }); renderSubsSel(); renderComponentes(); };
+document.getElementById('btnSubNone').onclick = ()=>{ SUBS_MARKED.clear(); renderSubSistemas(); renderComponentes(); };
+function applyFilterSub(){
+  const q = (filtroSub.value||'').toLowerCase();
+  [...subsBox.children].forEach(t=>{
+    const match = t.getAttribute('data-sub').toLowerCase().includes(q);
+    t.style.display = match ? '' : 'none';
+  });
+}
+function applyFilterComp(){
+  const q = (filtroComp.value||'').toLowerCase();
+  [...compsBox.children].forEach(c=>{
+    const txt = (c.getAttribute('data-comp')+' '+c.getAttribute('data-sub')).toLowerCase();
+    c.style.display = txt.includes(q) ? '' : 'none';
+  });
+}
+filtroSub.addEventListener('input', applyFilterSub);
+filtroComp.addEventListener('input', applyFilterComp);
+document.getElementById('btnCompAll').onclick = ()=>{ [...compsBox.children].forEach(c=>{ if(c.style.display!=='none'){ c.querySelector('input').checked=true; c.classList.add('active'); } }); };
+document.getElementById('btnCompNone').onclick = ()=>{ [...compsBox.children].forEach(c=>{ c.querySelector('input').checked=false; c.classList.remove('active'); }); };
+
+/* ======= Itens (linhas) ======= */
+const itemsEl = document.getElementById('items');
+function buildSelect(opts, placeholder="Selecione…"){ const s=document.createElement('select'); s.innerHTML=`<option value="">${placeholder}</option>`+opts.map(v=>`<option>${v}</option>`).join(''); return s; }
+function fillSystems(sel){ sel.innerHTML = `<option value="">Selecione…</option>` + Object.keys(HIERARQUIA).map(k=>`<option>${k}</option>`).join(''); }
+function createItemRow(prefill={}){
+  const row = el('div',{class:'item-row'});
+  const sSistema = el('select'); fillSystems(sSistema);
+  const sSub = el('select'); sSub.innerHTML = `<option value="">Selecione…</option>`;
+  const sComp = el('select'); sComp.innerHTML = `<option value="">Selecione…</option>`;
+  const sTipo = buildSelect(['Serviço','Peça'],'Tipo');
+  const sServ = buildSelect(SERVICOS,'Serviço');
+  const iDesc = el('input',{placeholder:'Peculiaridade (lado, marca, observações...)'});
+  const iQtd = el('input',{type:'number',step:'0.01', value: prefill.qtd ?? 1});
+  const sUn = buildSelect(['UN','H','L','KG','KIT'],'Unid');
+  const iPreco = el('input',{type:'number',step:'0.01', placeholder:'0,00'});
+  const actions = el('div',{class:'item-actions'});
+  const bDup = el('button',{class:'btn'},'Duplicar');
+  const bDel = el('button',{class:'btn'},'Remover');
+  actions.append(bDup,bDel);
+
+  sSistema.addEventListener('change', ()=>{
+    const sys = sSistema.value; sSub.innerHTML = `<option value="">Selecione…</option>`; sComp.innerHTML = `<option value="">Selecione…</option>`;
+    if(!sys) return; Object.keys(HIERARQUIA[sys]).forEach(sub=>{ const o=document.createElement('option'); o.textContent=sub; sSub.appendChild(o); });
+  });
+  sSub.addEventListener('change', ()=>{
+    const sys=sSistema.value, sub=sSub.value; sComp.innerHTML = `<option value="">Selecione…</option>`;
+    if(!sys||!sub) return; HIERARQUIA[sys][sub].forEach(c=>{ const o=document.createElement('option'); o.textContent=c; sComp.appendChild(o); });
+  });
+  sTipo.addEventListener('change', ()=>{
+    if(sTipo.value==='Peça' && !sServ.value) sServ.value='Troca/Substituição';
+    sUn.value = (sTipo.value==='Serviço') ? 'H' : 'UN';
+  });
+  [iQtd,iPreco,sTipo].forEach(elm=> elm.addEventListener('input', updateTotals));
+  bDel.addEventListener('click', ()=>{ row.remove(); updateTotals(); });
+  bDup.addEventListener('click', ()=>{ itemsEl.insertBefore(createItemRow(getRowData(row)), row.nextSibling); updateTotals(); });
+
+  // Prefill
+  if(prefill.sistema){ sSistema.value=prefill.sistema; sSistema.dispatchEvent(new Event('change')); }
+  if(prefill.sub){ sSub.value=prefill.sub; sSub.dispatchEvent(new Event('change')); }
+  if(prefill.comp){ sComp.value=prefill.comp; }
+  if(prefill.tipo){ sTipo.value=prefill.tipo; sTipo.dispatchEvent(new Event('change')); }
+  if(prefill.serv){ sServ.value=prefill.serv; }
+  if(prefill.desc){ iDesc.value=prefill.desc; }
+  if(typeof prefill.preco!=='undefined'){ iPreco.value=prefill.preco; }
+  if(prefill.un){ sUn.value=prefill.un; }
+
+  row.append(sSistema,sSub,sComp,sTipo,sServ,iDesc,iQtd,sUn,iPreco,actions);
+  return row;
+}
+function getRowData(row){
+  const [sistema, sub, comp, tipo, serv, desc, qtd, un, preco] = [...row.children].slice(0,9).map(el=> el.value);
+  return {sistema, sub, comp, tipo, serv, desc, qtd:Number(qtd||0), un, preco:Number(String(preco).replace(',','.'))};
+}
+function updateTotals(){
+  let tp=0, ts=0;
+  [...itemsEl.children].forEach(row=>{
+    const {tipo,qtd,preco} = getRowData(row);
+    const line = (qtd||0)*(preco||0);
+    if(tipo==='Peça') tp+=line; else ts+=line;
+  });
+  const acresc = toNumber(document.getElementById('t-acresc'));
+  const geral = tp + ts + acresc;
+  document.getElementById('t-pecas').textContent = fmtBRL(tp);
+  document.getElementById('t-serv').textContent  = fmtBRL(ts);
+  document.getElementById('t-geral').textContent = fmtBRL(geral);
+}
+document.getElementById('t-acresc').addEventListener('input', updateTotals);
+document.getElementById('btn-add').addEventListener('click', ()=>{ itemsEl.appendChild(createItemRow()); updateTotals(); });
+itemsEl.appendChild(createItemRow()); updateTotals();
+
+/* ======= Prévia e Adição em lote ======= */
+const lTipo = document.getElementById('l-tipo');
+const lQtd = document.getElementById('l-qtd');
+const lUn = document.getElementById('l-un');
+const lPreco = document.getElementById('l-preco');
+const lCompleto = document.getElementById('l-completo');
+const lAutoServ = document.getElementById('l-auto-serv');
+const previewBox = document.getElementById('previewBox');
+const previewBody = document.getElementById('preview-body');
+
+document.getElementById('btn-preview').addEventListener('click', buildPreviewRows);
+function buildPreviewRows(){
+  previewBody.innerHTML=''; previewBox.style.display='block';
+  if(!SYS || SUBS_MARKED.size===0){ previewBody.innerHTML='<tr><td colspan="6" style="padding:10px;color:#64748b">Selecione ao menos um SubSistema.</td></tr>'; return; }
+  const entries = [];
+  if(lCompleto.checked){
+    [...SUBS_MARKED].forEach(sub=> entries.push({sub, comp:'Conjunto completo'}));
+  }else{
+    const selectedComps = [...compsBox.children].filter(c=> c.querySelector('input').checked && c.style.display!=='none');
+    if(!selectedComps.length){ previewBody.innerHTML='<tr><td colspan="6" style="padding:10px;color:#64748b">Marque Componentes ou use “Completo”.</td></tr>'; return; }
+    selectedComps.forEach(c=> entries.push({sub:c.getAttribute('data-sub'), comp:c.getAttribute('data-comp')}));
+  }
+
+  entries.forEach(ent=>{
+    const tr = el('tr',{},
+      el('td', {style:"padding:8px;border-bottom:1px solid #e2e8f0"}, ent.sub),
+      el('td', {style:"padding:8px;border-bottom:1px solid #e2e8f0"}, ent.comp),
+      el('td', {style:"padding:8px;border-bottom:1px solid #e2e8f0"}, el('input',{placeholder:'Peculiaridade'})),
+      el('td', {style:"padding:8px;border-bottom:1px solid #e2e8f0"}, el('input',{type:'number',step:'0.01', value:lQtd.value||1})),
+      el('td', {style:"padding:8px;border-bottom:1px solid #e2e8f0"}, (()=>{ const s=buildSelect(['UN','H','L','KG','KIT']); s.value=(lTipo.value==='Serviço')?'H':(lUn.value||'UN'); return s; })()),
+      el('td', {style:"padding:8px;border-bottom:1px solid #e2e8f0"}, el('input',{type:'number',step:'0.01', value:lPreco.value||0}))
+    );
+    previewBody.append(tr);
+  });
+}
+
+document.getElementById('btn-add-batch').addEventListener('click', ()=>{
+  if(previewBody.children.length===0){ buildPreviewRows(); return; }
+  const rows = [...previewBody.querySelectorAll('tr')];
+  if(!rows.length) return;
+
+  rows.forEach(tr=>{
+    const tds=tr.querySelectorAll('td');
+    const sub = tds[0].textContent;
+    const comp = tds[1].textContent;
+    const desc = tds[2].querySelector('input').value;
+    const qtd  = parseFloat(tds[3].querySelector('input').value||'1');
+    const un   = tds[4].querySelector('select').value || ((lTipo.value==='Serviço')?'H':'UN');
+    const preco= parseFloat(tds[5].querySelector('input').value||'0');
+
+    const base = { sistema:SYS, sub, comp, tipo:lTipo.value,
+      serv:(lTipo.value==='Peça')?'Troca/Substituição':'Teste funcional',
+      desc, qtd, un, preco };
+    itemsEl.appendChild(createItemRow(base));
+
+    if(lTipo.value==='Peça' && lAutoServ.checked){
+      const servRow = { sistema:SYS, sub, comp, tipo:'Serviço', serv:'Troca/Substituição',
+        desc:`Serviço referente a: ${comp}${desc? ' — '+desc:''}`, qtd:1, un:'H', preco:0 };
+      itemsEl.appendChild(createItemRow(servRow));
+    }
+  });
+  updateTotals();
+  previewBox.style.display='none';
+  // Limpa marcações de componentes para próxima seleção
+  [...compsBox.children].forEach(c=>{ c.querySelector('input').checked=false; c.classList.remove('active'); });
+});
+
+/* ======= Exportar / Salvar / Carregar ======= */
+function getRows(){ return [...itemsEl.children].map(getRowData); }
+function download(filename, text, mime='text/plain'){ const blob=new Blob([text],{type:mime}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url); a.remove();},0); }
+document.getElementById('btn-export').addEventListener('click', ()=>{
+  const head = ["Sistema","SubSistema","Componente","Tipo","Serviço","Descrição","Qtd","Un","Preço"];
+  const lines = [head.join(';')].concat(getRows().map(it=>[
+    it.sistema||'', it.sub||'', it.comp||'', it.tipo||'', it.serv||'',
+    (it.desc||'').replace(/;/g,','), it.qtd||0, it.un||'', (it.preco||0)
+  ].join(';')));
+  download(`OS_${document.getElementById('f-os').value||'itens'}.csv`, lines.join('\n'), 'text/csv;charset=utf-8;');
+});
+document.getElementById('btn-save').addEventListener('click', ()=>{
+  const payload = {
+    meta:{ os:document.getElementById('f-os').value, entrada:document.getElementById('f-data-entrada').value, entrega:document.getElementById('f-data-entrega').value, resp:document.getElementById('f-resp').value, status:document.getElementById('osStatus').textContent },
+    cliente:{ nome:document.getElementById('f-cliente').value, fone:document.getElementById('f-fone').value, placa:document.getElementById('f-placa').value },
+    itens:getRows(),
+    totais:{ pecas:document.getElementById('t-pecas').textContent, serv:document.getElementById('t-serv').textContent, acresc:Number(document.getElementById('t-acresc').value||0), geral:document.getElementById('t-geral').textContent }
+  };
+  download(`OS_${payload.meta.os||'sem-numero'}.json`, JSON.stringify(payload,null,2), 'application/json');
+});
+document.getElementById('btn-load').addEventListener('click', ()=>{
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json';
+  inp.addEventListener('change', async ()=>{
+    const f=inp.files[0]; if(!f) return; const data=JSON.parse(await f.text());
+    document.getElementById('f-os').value=data?.meta?.os||'';
+    document.getElementById('f-data-entrada').value=data?.meta?.entrada||'';
+    document.getElementById('f-data-entrega').value=data?.meta?.entrega||'';
+    document.getElementById('f-resp').value=data?.meta?.resp||'';
+    document.getElementById('f-cliente').value=data?.cliente?.nome||'';
+    document.getElementById('f-fone').value=data?.cliente?.fone||'';
+    document.getElementById('f-placa').value=data?.cliente?.placa||'';
+    itemsEl.innerHTML='';
+    (data?.itens||[]).forEach(it=> itemsEl.appendChild(createItemRow(it)));
+    document.getElementById('t-acresc').value = data?.totais?.acresc ?? 0;
+    updateTotals();
+  });
+  inp.click();
+});
+
+/* start */
+renderSistemas();
+</script>
+</body>
+</html>
