@@ -9,6 +9,7 @@
   :root{
     --bg:#f7fafc; --text:#0f172a; --muted:#64748b; --line:#e2e8f0; --card:#ffffff;
     --primary:#2563eb; --primary-2:#60a5fa; --ok:#16a34a; --warn:#d97706; --bad:#ef4444;
+    --mech:#3b82f6; --safe:#f97316; --comfort:#16a34a;
     --radius:14px;
     font-size:22px;
   }
@@ -33,7 +34,7 @@
   }
   input:focus, select:focus, textarea:focus{border-color:#93c5fd; box-shadow:0 0 0 3px #93c5fd55}
   textarea{min-height:80px;resize:vertical}
-  .btn{display:inline-flex;align-items:center;gap:8px;background:#f1f5f9;border:1px solid #dbe6f1;color:#0f172a;padding:14px 18px;border-radius:12px;cursor:pointer;font-size:1.1rem}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:#f1f5f9;border:1px solid #dbe6f1;color:#0f172a;padding:18px 24px;border-radius:12px;cursor:pointer;font-size:1.2rem}
   .btn:hover{background:#e9eef5}
   .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-color:transparent}
   .btn.ghost{background:#fff}
@@ -51,11 +52,17 @@
   .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
   .tile{
     display:flex;align-items:center;gap:16px;background:#ffffff;border:2px solid #dbe6f1;border-radius:16px;
-    padding:24px; cursor:pointer; min-height:120px; transition:.15s;
+    padding:16px; cursor:pointer; min-height:100px; transition:.15s;
   }
   .tile:hover{border-color:#93c5fd; box-shadow:0 4px 16px #0f172a0d}
   @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-  .tile .icon{width:64px;height:64px;flex:0 0 64px;border-radius:10px;display:grid;place-items:center;background:#eef5ff;border:1px solid #d4e4ff}
+  .tile .icon{width:80px;height:80px;flex:0 0 80px;border-radius:10px;display:grid;place-items:center;background:#eef5ff;border:1px solid #d4e4ff;font-size:2rem}
+  .tile.cat-mech{border-color:var(--mech)}
+  .tile.cat-safe{border-color:var(--safe)}
+  .tile.cat-comfort{border-color:var(--comfort)}
+  .tile.cat-mech .icon{border-color:var(--mech);background:rgba(59,130,246,.1)}
+  .tile.cat-safe .icon{border-color:var(--safe);background:rgba(249,115,22,.1)}
+  .tile.cat-comfort .icon{border-color:var(--comfort);background:rgba(22,163,74,.1)}
   .tile .title{font-weight:700}
   .tile .hint{font-size:1rem;color:var(--muted)}
   .tile .sub-inputs{display:none;margin-top:6px}
@@ -76,6 +83,14 @@
   .comp .inputs input.qtd{flex:0 0 60px}
   .comp .inputs input.val{flex:0 0 80px}
   .comp .hint{font-size:1rem;color:var(--muted)}
+  .status{display:flex;gap:8px;margin-top:6px}
+  .status-btn{font-size:2rem;flex:0 0 60px;background:#fff;border:2px solid #e2e8f0;border-radius:12px;cursor:pointer}
+  .status-btn.ok{border-color:var(--ok)}
+  .status-btn.warn{border-color:var(--warn)}
+  .status-btn.bad{border-color:var(--bad)}
+  .comp.ok{border-color:var(--ok)}
+  .comp.warn{border-color:var(--warn)}
+  .comp.bad{border-color:var(--bad)}
   .footer-note{font-size:1rem;color:var(--muted)}
   @media (max-width:900px){
     .tiles{grid-template-columns:1fr 1fr}
@@ -100,6 +115,15 @@
     <button class="btn ghost" id="btn-new" style="margin-left:auto">Nova OS</button>
   </header>
 
+  <div class="card" id="dashCard">
+    <h3 class="section-title">Dashboard</h3>
+    <div class="totals">
+      <div class="kpi"><div class="k">Abertas</div><div class="v" id="d-abertas">0</div></div>
+      <div class="kpi"><div class="k">Aguardando Peça</div><div class="v" id="d-aguardando">0</div></div>
+      <div class="kpi"><div class="k">Concluídas</div><div class="v" id="d-concluidas">0</div></div>
+    </div>
+  </div>
+
   <!-- DADOS BÁSICOS -->
   <div class="card">
     <h3 class="section-title">Dados</h3>
@@ -109,16 +133,22 @@
       <div><label>Entrega (prev.)</label><input type="date" id="f-data-entrega"/></div>
       <div><label>Responsável</label><input id="f-resp" placeholder="Mecânico/Oficina"/></div>
     </div>
-    <div class="grid g3" style="margin-top:8px">
+    <div class="grid g4" style="margin-top:8px">
       <div><label>Cliente</label><input id="f-cliente"/></div>
       <div><label>Telefone</label><input id="f-fone"/></div>
+      <div><label>CPF</label><input id="f-cpf"/></div>
       <div><label>Placa</label><input id="f-placa" placeholder="AAA0A00" pattern="[A-Z]{3}[0-9][A-Z0-9][0-9]{2}"/></div>
     </div>
+    <div id="hist" class="mini"></div>
   </div>
 
   <!-- ADICIONADOR VISUAL — PASSO A PASSO -->
   <div class="card">
     <h3 class="section-title">Adicionar itens (visual e em lote)</h3>
+
+    <div class="toolbar" style="justify-content:flex-end;margin-bottom:8px">
+      <button id="btn-all-ok" class="btn">Adicionar tudo normal</button>
+    </div>
 
     <!-- Passo 1: Sistemas -->
     <label>1) Escolha o <b>Sistema</b></label>
@@ -156,6 +186,7 @@
     <!-- Opções & Prévia -->
     <div class="divider"></div>
     <div class="toolbar" style="justify-content:flex-end">
+      <button class="btn" id="btn-pdf">Exportar PDF</button>
       <button class="btn" id="btn-finalizar">Finalizar checklist</button>
       <button class="btn primary" id="btn-add-batch">Adicionar itens</button>
     </div>
@@ -190,6 +221,11 @@
   </div>
 
   <div class="mini">Arquivo local. As imagens de referência foram mostradas acima para orientar a seleção (não são baixadas pelo formulário).</div>
+
+  <div class="card" id="sugestoes" style="display:none">
+    <h3 class="section-title">Sugestões</h3>
+    <ul id="sug-list"></ul>
+  </div>
 </div>
 
 <script>
@@ -246,6 +282,23 @@ const HIERARQUIA = {
 };
 const SERVICOS = ["Inspeção visual","Teste funcional","Diagnóstico com scanner","Leitura/limpeza de DTC","Limpeza/descarbonização","Ajuste/Calibração","Troca/Substituição","Reparo/Recondicionamento","Lubrificação","Reaperto/Torque","Sangria (freio/embreagem)","Alinhamento","Balanceamento","Regulagem de faróis","Recarga (bateria/A.C.)","Atualização de software","Regeneração DPF (diesel)","Vedação/Aplicação de junta/cola","Higienização do A.C.","Teste de rodagem/validação"];
 
+const SYS_CAT = {
+  "Motor":"mech",
+  "Transmissão/Tração":"mech",
+  "Suspensão":"mech",
+  "Carroceria & Fechaduras":"mech",
+  "Diagnóstico & Testes":"mech",
+  "Direção":"safe",
+  "Freios":"safe",
+  "Pneus & Rodas":"safe",
+  "Segurança & Itens obrigatórios":"safe",
+  "Ar-Condicionado/Climatização":"comfort",
+  "Elétrica/Eletrônica":"comfort",
+  "Documentação & Acessórios":"comfort"
+};
+
+const CHECKLIST = {};
+
 /* ======= Utils ======= */
 const fmtBRL = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
 const toNumber = el => { const n = parseFloat(String(el?.value||"").replace(",",".")); return isFinite(n)?n:0; };
@@ -293,7 +346,8 @@ const SUBS = new Set();
 function renderSistemas(){
   tilesSistemas.innerHTML='';
   Object.keys(HIERARQUIA).forEach(sys=>{
-    const t = el('div',{class:'tile', tabindex:"0", role:"button", 'data-sys':sys});
+    const cat = SYS_CAT[sys] || 'mech';
+    const t = el('div',{class:`tile cat-${cat}`, tabindex:"0", role:"button", 'data-sys':sys});
     t.innerHTML = `<div class="icon">${sysIcon(sys)}</div>
                    <div style="flex:1"><div class="title">${sys}</div>
                    <div class="hint">Clique para selecionar</div></div>`;
@@ -360,17 +414,73 @@ function renderComponentes(){
       c.innerHTML = `<div class="icon">${sysIcon(SYS)}</div>
                      <div style="flex:1"><div class="title">${comp}</div>
                      <div class="hint">${sub}</div>
+                     <div class="status">
+                       <button type="button" class="status-btn ok" data-status="ok">✅</button>
+                       <button type="button" class="status-btn warn" data-status="warn">⚠️</button>
+                       <button type="button" class="status-btn bad" data-status="bad">❌</button>
+                       <button type="button" class="status-btn mic">🎤</button>
+                     </div>
                      <div class="inputs">
                        <input type="number" class="qtd" placeholder="Qtd" value="1">
                        <input class="obs" placeholder="Obs">
                        <input type="number" class="val" placeholder="Valor" value="0">
                      </div>
                      </div>`;
-      c.addEventListener('click', e=>{ if(e.target.closest('.inputs')) return; c.classList.toggle('active'); });
+      const buttons = c.querySelectorAll('.status-btn');
+      buttons.forEach(b=>b.addEventListener('click', e=>{
+        const st = b.getAttribute('data-status');
+        if(st){
+          c.dataset.status = st;
+          c.classList.remove('ok','warn','bad');
+          c.classList.add(st);
+          if(st==='ok'){ c.querySelector('.inputs').style.display='none'; }
+          else{ c.querySelector('.inputs').style.display='flex'; }
+          const obs=c.querySelector('.obs').value;
+          const val=parseFloat(c.querySelector('.val').value||0);
+          setStatus(SYS, sub, comp, st, obs, val);
+          updateSuggestions();
+        }else if(b.classList.contains('mic')){
+          startDictation(c.querySelector('.obs'));
+        }
+      }));
+      [c.querySelector('.obs'), c.querySelector('.val')].forEach(inp=>inp.addEventListener('input', ()=>{
+        const st = c.dataset.status || 'ok';
+        const obs=c.querySelector('.obs').value;
+        const val=parseFloat(c.querySelector('.val').value||0);
+        setStatus(SYS, sub, comp, st, obs, val);
+      }));
       compsBox.appendChild(c);
     });
   });
   applyFilterComp();
+}
+
+function setStatus(sys, sub, comp, status, obs='', val=0){
+  if(!CHECKLIST[sys]) CHECKLIST[sys] = {};
+  if(!CHECKLIST[sys][sub]) CHECKLIST[sys][sub] = {};
+  CHECKLIST[sys][sub][comp] = {status, obs, val};
+}
+
+function startDictation(input){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR) return;
+  const rec = new SR();
+  rec.lang = 'pt-BR';
+  rec.onresult = e=>{ input.value = e.results[0][0].transcript; };
+  rec.start();
+}
+
+function updateSuggestions(){
+  const sug=[];
+  const freios = CHECKLIST['Freios'];
+  if(freios){
+    Object.values(freios).forEach(obj=>{
+      Object.values(obj).forEach(it=>{ if(it.status==='bad') sug.push('Revisar pneus e rodas'); });
+    });
+  }
+  const list=document.getElementById('sug-list');
+  list.innerHTML = sug.map(s=>`<li>${s}</li>`).join('');
+  document.getElementById('sugestoes').style.display = sug.length ? 'block' : 'none';
 }
 
 /* Filtros */
@@ -390,6 +500,39 @@ function applyFilterComp(){
 }
 filtroSub.addEventListener('input', applyFilterSub);
 filtroComp.addEventListener('input', applyFilterComp);
+
+document.getElementById('btn-all-ok').addEventListener('click', ()=>{
+  Object.keys(HIERARQUIA).forEach(sys=>{
+    Object.entries(HIERARQUIA[sys]).forEach(([sub, comps])=>{
+      comps.forEach(comp=>setStatus(sys, sub, comp, 'ok'));
+    });
+  });
+  alert('Todos os itens marcados como Ok');
+});
+
+function autoFillCliente(){
+  const placa = document.getElementById('f-placa').value.trim();
+  const cpf = document.getElementById('f-cpf').value.trim();
+  const q = placa || cpf;
+  if(!q) return;
+  google.script.run.withSuccessHandler(res=>{
+    if(res && res.cliente){
+      document.getElementById('f-cliente').value = res.cliente.nome || '';
+      document.getElementById('f-fone').value = res.cliente.fone || '';
+      document.getElementById('hist').innerHTML = (res.historico||[]).map(h=>`<div>OS ${h.meta.os} - ${h.meta.status||''}</div>`).join('');
+    }
+  }).findCliente(q);
+}
+document.getElementById('f-placa').addEventListener('blur', autoFillCliente);
+document.getElementById('f-cpf').addEventListener('blur', autoFillCliente);
+
+document.getElementById('btn-pdf').addEventListener('click', ()=>window.print());
+
+google.script.run.withSuccessHandler(d=>{
+  document.getElementById('d-abertas').textContent = d.abertas;
+  document.getElementById('d-aguardando').textContent = d.aguardando;
+  document.getElementById('d-concluidas').textContent = d.concluidas;
+}).getDashboard();
 
 /* ======= Itens (linhas) ======= */
 const itemsEl = document.getElementById('items');
@@ -462,7 +605,7 @@ document.getElementById('btn-add').addEventListener('click', ()=>{ itemsEl.appen
 
 /* ======= Adição em lote ======= */
 document.getElementById('btn-add-batch').addEventListener('click', ()=>{
-  const ativos = compsBox.querySelectorAll('.comp.active');
+  const ativos = [...compsBox.querySelectorAll('.comp')].filter(c=>c.dataset.status && c.dataset.status!=='ok');
   if(!ativos.length) return;
   ativos.forEach(c=>{
     const sub = c.getAttribute('data-sub');
@@ -474,7 +617,9 @@ document.getElementById('btn-add-batch').addEventListener('click', ()=>{
     const un   = 'UN';
     const base = { sistema:SYS, sub, comp, tipo, serv:(tipo==='Peça')?'Troca/Substituição':'Teste funcional', desc, qtd, un, preco };
     itemsEl.appendChild(createItemRow(base));
-    c.classList.remove('active');
+    c.dataset.status='ok';
+    c.classList.remove('warn','bad');
+    c.querySelector('.inputs').style.display='none';
   });
   updateTotals();
   document.getElementById('itemsCard').style.display='block';
@@ -522,7 +667,8 @@ fileHier.addEventListener('change', e=>{
 function buildPayload(){
   return {
     meta:{ os:document.getElementById('f-os').value, entrada:document.getElementById('f-data-entrada').value, entrega:document.getElementById('f-data-entrega').value, resp:document.getElementById('f-resp').value, status:document.getElementById('osStatus').textContent },
-    cliente:{ nome:document.getElementById('f-cliente').value, fone:document.getElementById('f-fone').value, placa:document.getElementById('f-placa').value },
+    cliente:{ nome:document.getElementById('f-cliente').value, fone:document.getElementById('f-fone').value, cpf:document.getElementById('f-cpf').value, placa:document.getElementById('f-placa').value },
+    checklist: CHECKLIST,
     itens:getRows(),
     totais:{ pecas:document.getElementById('t-pecas').textContent, serv:document.getElementById('t-serv').textContent, acresc:Number(document.getElementById('t-acresc').value||0), geral:document.getElementById('t-geral').textContent }
   };
@@ -544,6 +690,7 @@ function applyData(data){
   document.getElementById('f-resp').value = data?.meta?.resp || '';
   document.getElementById('f-cliente').value = data?.cliente?.nome || '';
   document.getElementById('f-fone').value = data?.cliente?.fone || '';
+  document.getElementById('f-cpf').value = data?.cliente?.cpf || '';
   document.getElementById('f-placa').value = data?.cliente?.placa || '';
   document.getElementById('osNumber').textContent = data?.meta?.os || '';
   document.getElementById('osDate').textContent = data?.meta?.entrada || '';
@@ -552,7 +699,10 @@ function applyData(data){
   (data?.itens||[]).forEach(it => itemsEl.appendChild(createItemRow(it)));
   document.getElementById('itemsCard').style.display = (data?.itens?.length) ? 'block' : 'none';
   document.getElementById('t-acresc').value = data?.totais?.acresc ?? 0;
+  Object.keys(CHECKLIST).forEach(k=>delete CHECKLIST[k]);
+  Object.assign(CHECKLIST, data?.checklist || {});
   updateTotals();
+  updateSuggestions();
 }
 
 document.getElementById('btn-load').addEventListener('click', ()=>{
@@ -576,11 +726,15 @@ function startNewOS(){
   document.getElementById('f-resp').value = '';
   document.getElementById('f-cliente').value = '';
   document.getElementById('f-fone').value = '';
+  document.getElementById('f-cpf').value = '';
   document.getElementById('f-placa').value = '';
+  document.getElementById('hist').innerHTML = '';
   itemsEl.innerHTML = '';
   document.getElementById('itemsCard').style.display = 'none';
   document.getElementById('t-acresc').value = 0;
+  Object.keys(CHECKLIST).forEach(k=>delete CHECKLIST[k]);
   updateTotals();
+  updateSuggestions();
 }
 
 document.getElementById('btn-new').addEventListener('click', ()=>{
