@@ -1,6 +1,6 @@
 const SHEET_ID = '1nd7ILniGFRTDcqs15QwoRKWyNabsz_6BAzSiXfa4skQ';
 const TAB_NAME = 'OS';
-const HEADERS = ['meta','cliente','itens','totais'];
+const HEADERS = ['meta','cliente','checklist','itens','totais'];
 
 function getSheet(){
   const ss = SpreadsheetApp.openById(SHEET_ID);
@@ -30,6 +30,7 @@ function saveOS(payload){
   const row = [
     JSON.stringify(payload.meta || {}),
     JSON.stringify(payload.cliente || {}),
+    JSON.stringify(payload.checklist || {}),
     JSON.stringify(payload.itens || []),
     JSON.stringify(payload.totais || {})
   ];
@@ -51,8 +52,9 @@ function loadOS(os){
         return {
           meta,
           cliente: JSON.parse(r[1] || '{}'),
-          itens: JSON.parse(r[2] || '[]'),
-          totais: JSON.parse(r[3] || '{}')
+          checklist: JSON.parse(r[2] || '{}'),
+          itens: JSON.parse(r[3] || '[]'),
+          totais: JSON.parse(r[4] || '{}')
         };
       }
     }catch(e){ }
@@ -72,6 +74,39 @@ function getNextOS(){
     }catch(e){}
   });
   return max + 1;
+}
+
+function findCliente(query){
+  const sh = getSheet();
+  const rows = sh.getRange(2,1,Math.max(sh.getLastRow()-1,0),HEADERS.length).getValues();
+  let cliente = null; const historico=[];
+  rows.forEach(r=>{
+    try{
+      const meta = JSON.parse(r[0]||'{}');
+      const cli = JSON.parse(r[1]||'{}');
+      if(cli.placa===query || cli.cpf===query){
+        if(!cliente) cliente = cli;
+        historico.push({meta});
+      }
+    }catch(e){}
+  });
+  return {cliente, historico};
+}
+
+function getDashboard(){
+  const sh = getSheet();
+  const rows = sh.getRange(2,1,Math.max(sh.getLastRow()-1,0),1).getValues();
+  const c = {abertas:0, aguardando:0, concluidas:0};
+  rows.forEach(r=>{
+    try{
+      const meta = JSON.parse(r[0]||'{}');
+      const st = String(meta.status||'').toLowerCase();
+      if(st==='aguardando peça') c.aguardando++;
+      else if(st==='concluída'||st==='concluido'||st==='concluida') c.concluidas++;
+      else c.abertas++;
+    }catch(e){}
+  });
+  return c;
 }
 
 function doGet(){
