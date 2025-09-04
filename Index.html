@@ -97,6 +97,7 @@
     <h1>OS <span id="osNumber"></span></h1>
     <span class="pill" id="osStatus">Aberta</span>
     <span class="mini">Criada em <span id="osDate"></span></span>
+    <button class="btn ghost" id="btn-new" style="margin-left:auto">Nova OS</button>
   </header>
 
   <!-- DADOS BÁSICOS -->
@@ -537,16 +538,19 @@ document.getElementById('btn-save').addEventListener('click', ()=>saveChecklist(
 document.getElementById('btn-finalizar').addEventListener('click', ()=>saveChecklist('Checklist finalizado!'));
 
 function applyData(data){
-  document.getElementById('f-os').value=data?.meta?.os||'';
-  document.getElementById('f-data-entrada').value=data?.meta?.entrada||'';
-  document.getElementById('f-data-entrega').value=data?.meta?.entrega||'';
-  document.getElementById('f-resp').value=data?.meta?.resp||'';
-  document.getElementById('f-cliente').value=data?.cliente?.nome||'';
-  document.getElementById('f-fone').value=data?.cliente?.fone||'';
-  document.getElementById('f-placa').value=data?.cliente?.placa||'';
-  itemsEl.innerHTML='';
-  (data?.itens||[]).forEach(it=> itemsEl.appendChild(createItemRow(it)));
-  document.getElementById('itemsCard').style.display = (data?.itens?.length)?'block':'none';
+  document.getElementById('f-os').value = data?.meta?.os || '';
+  document.getElementById('f-data-entrada').value = data?.meta?.entrada || '';
+  document.getElementById('f-data-entrega').value = data?.meta?.entrega || '';
+  document.getElementById('f-resp').value = data?.meta?.resp || '';
+  document.getElementById('f-cliente').value = data?.cliente?.nome || '';
+  document.getElementById('f-fone').value = data?.cliente?.fone || '';
+  document.getElementById('f-placa').value = data?.cliente?.placa || '';
+  document.getElementById('osNumber').textContent = data?.meta?.os || '';
+  document.getElementById('osDate').textContent = data?.meta?.entrada || '';
+  document.getElementById('osStatus').textContent = data?.meta?.status || 'Aberta';
+  itemsEl.innerHTML = '';
+  (data?.itens||[]).forEach(it => itemsEl.appendChild(createItemRow(it)));
+  document.getElementById('itemsCard').style.display = (data?.itens?.length) ? 'block' : 'none';
   document.getElementById('t-acresc').value = data?.totais?.acresc ?? 0;
   updateTotals();
 }
@@ -560,8 +564,32 @@ document.getElementById('btn-load').addEventListener('click', ()=>{
     .loadOS(os);
 });
 
+function startNewOS(){
+  google.script.run.withSuccessHandler(num=>{
+    document.getElementById('f-os').value = num;
+    document.getElementById('osNumber').textContent = num;
+  }).getNextOS();
+  document.getElementById('osDate').textContent = new Date().toLocaleDateString('pt-BR');
+  document.getElementById('osStatus').textContent = 'Aberta';
+  document.getElementById('f-data-entrada').value = '';
+  document.getElementById('f-data-entrega').value = '';
+  document.getElementById('f-resp').value = '';
+  document.getElementById('f-cliente').value = '';
+  document.getElementById('f-fone').value = '';
+  document.getElementById('f-placa').value = '';
+  itemsEl.innerHTML = '';
+  document.getElementById('itemsCard').style.display = 'none';
+  document.getElementById('t-acresc').value = 0;
+  updateTotals();
+}
+
+document.getElementById('btn-new').addEventListener('click', ()=>{
+  if(confirm('Iniciar nova OS? Dados não salvos serão perdidos.')) startNewOS();
+});
+
 /* start */
 renderSistemas();
+startNewOS();
 </script>
 </body>
 </html>

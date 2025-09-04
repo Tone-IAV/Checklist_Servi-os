@@ -60,6 +60,20 @@ function loadOS(os){
   return null;
 }
 
+function getNextOS(){
+  const sh = getSheet();
+  const rows = sh.getRange(2,1,Math.max(sh.getLastRow()-1,0),1).getValues();
+  let max = 0;
+  rows.forEach(r=>{
+    try{
+      const meta = JSON.parse(r[0] || '{}');
+      const n = parseInt(meta.os,10);
+      if(n > max) max = n;
+    }catch(e){}
+  });
+  return max + 1;
+}
+
 function doGet(){
   return HtmlService.createHtmlOutputFromFile('Index');
 }
