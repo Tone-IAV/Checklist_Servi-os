@@ -27,7 +27,7 @@
       <div><label>Responsável</label><input id="f-resp" placeholder="Mecânico/Oficina"/></div>
     </div>
     <div class="grid g4" style="margin-top:8px">
-      <div><label>Placa</label><input id="f-placa" placeholder="AAA0A00" pattern="[A-Z]{3}[0-9][A-Z0-9][0-9]{2}"/></div>
+      <div><label>Placa</label><input id="f-placa" list="lista-placas" placeholder="AAA0A00" pattern="[A-Z]{3}[0-9][A-Z0-9][0-9]{2}"/><datalist id="lista-placas"></datalist></div>
       <div><label>Veículo</label><input id="f-veiculo" readonly /></div>
       <div><label>Ano</label><input id="f-ano" readonly /></div>
       <div><label>Mod</label><input id="f-mod" readonly /></div>
@@ -391,7 +391,9 @@ function autoFillVeiculo(){
     document.getElementById('f-mod').value = info?.mod || '';
   }).getVeiculo(placa);
 }
-document.getElementById('f-placa').addEventListener('blur', autoFillVeiculo);
+const placaInput = document.getElementById('f-placa');
+placaInput.addEventListener('blur', autoFillVeiculo);
+placaInput.addEventListener('change', autoFillVeiculo);
 
 document.getElementById('btn-pdf').addEventListener('click', ()=>window.print());
 
@@ -611,5 +613,8 @@ document.getElementById('btn-new').addEventListener('click', ()=>{
 document.addEventListener('DOMContentLoaded', ()=>{
   loadHierarquia();
   startNewOS();
+  google.script.run.withSuccessHandler(list=>{
+    document.getElementById('lista-placas').innerHTML = list.map(p=>`<option value="${p}"></option>`).join('');
+  }).listPlacas();
 });
 </script>

@@ -21,7 +21,8 @@ function getSheet(){
 function saveOS(payload){
   const sh = getSheet();
   const os = payload?.meta?.os;
-  const rows = sh.getRange(2,1,Math.max(sh.getLastRow()-1,0),HEADERS.length).getValues();
+  const last = sh.getLastRow();
+  const rows = last > 1 ? sh.getRange(2,1,last-1,HEADERS.length).getValues() : [];
   let idx = -1;
   if(os){
     idx = rows.findIndex(r=>{
@@ -45,7 +46,8 @@ function saveOS(payload){
 function loadOS(os){
   if(!os) return null;
   const sh = getSheet();
-  const rows = sh.getRange(2,1,Math.max(sh.getLastRow()-1,0),HEADERS.length).getValues();
+  const last = sh.getLastRow();
+  const rows = last > 1 ? sh.getRange(2,1,last-1,HEADERS.length).getValues() : [];
   for(const r of rows){
     try{
       const meta = JSON.parse(r[0] || '{}');
@@ -65,7 +67,8 @@ function loadOS(os){
 
 function getNextOS(){
   const sh = getSheet();
-  const rows = sh.getRange(2,1,Math.max(sh.getLastRow()-1,0),1).getValues();
+  const last = sh.getLastRow();
+  const rows = last > 1 ? sh.getRange(2,1,last-1,1).getValues() : [];
   let max = 0;
   rows.forEach(r=>{
     try{
@@ -142,9 +145,23 @@ function getVeiculo(placa){
   return null;
 }
 
+function listPlacas(){
+  const ss = SpreadsheetApp.openById(DATA_SHEET_ID);
+  const sh = ss.getSheetByName('VEICULOS');
+  if(!sh) return [];
+  const values = sh.getDataRange().getValues();
+  const placas = [];
+  for(let i=1;i<values.length;i++){
+    const p = values[i][0];
+    if(p) placas.push(p);
+  }
+  return placas;
+}
+
 function getDashboard(){
   const sh = getSheet();
-  const rows = sh.getRange(2,1,Math.max(sh.getLastRow()-1,0),1).getValues();
+  const last = sh.getLastRow();
+  const rows = last > 1 ? sh.getRange(2,1,last-1,1).getValues() : [];
   const c = {abertas:0, aguardando:0, concluidas:0};
   rows.forEach(r=>{
     try{
