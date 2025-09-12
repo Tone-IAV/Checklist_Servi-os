@@ -1,6 +1,6 @@
 const SHEET_ID = '1nd7ILniGFRTDcqs15QwoRKWyNabsz_6BAzSiXfa4skQ';
 const TAB_NAME = 'OS';
-const HEADERS = ['meta','cliente','checklist','itens','totais'];
+const HEADERS = ['meta','veiculo','checklist','itens','totais'];
 const DATA_SHEET_ID = '1fGx1JHUVqZNKtEdwwErZYegHaDm3hH4TQhXeMfd4MW4';
 
 function getSheet(){
@@ -30,7 +30,7 @@ function saveOS(payload){
   }
   const row = [
     JSON.stringify(payload.meta || {}),
-    JSON.stringify(payload.cliente || {}),
+    JSON.stringify(payload.veiculo || {}),
     JSON.stringify(payload.checklist || {}),
     JSON.stringify(payload.itens || []),
     JSON.stringify(payload.totais || {})
@@ -52,7 +52,7 @@ function loadOS(os){
       if(String(meta.os) === String(os)){
         return {
           meta,
-          cliente: JSON.parse(r[1] || '{}'),
+          veiculo: JSON.parse(r[1] || '{}'),
           checklist: JSON.parse(r[2] || '{}'),
           itens: JSON.parse(r[3] || '[]'),
           totais: JSON.parse(r[4] || '{}')
@@ -127,21 +127,19 @@ function saveTables(data){
   return true;
 }
 
-function findCliente(query){
-  const sh = getSheet();
-  const rows = sh.getRange(2,1,Math.max(sh.getLastRow()-1,0),HEADERS.length).getValues();
-  let cliente = null; const historico=[];
-  rows.forEach(r=>{
-    try{
-      const meta = JSON.parse(r[0]||'{}');
-      const cli = JSON.parse(r[1]||'{}');
-      if(cli.placa===query || cli.cpf===query){
-        if(!cliente) cliente = cli;
-        historico.push({meta});
-      }
-    }catch(e){}
-  });
-  return {cliente, historico};
+function getVeiculo(placa){
+  if(!placa) return null;
+  const ss = SpreadsheetApp.openById(DATA_SHEET_ID);
+  const sh = ss.getSheetByName('VEICULOS');
+  if(!sh) return null;
+  const values = sh.getDataRange().getValues();
+  for(let i=1;i<values.length;i++){
+    const row = values[i];
+    if(String(row[0]).toUpperCase() === placa.toUpperCase()){
+      return {veiculo: row[1], ano: row[2], mod: row[3]};
+    }
+  }
+  return null;
 }
 
 function getDashboard(){

@@ -27,12 +27,11 @@
       <div><label>Responsável</label><input id="f-resp" placeholder="Mecânico/Oficina"/></div>
     </div>
     <div class="grid g4" style="margin-top:8px">
-      <div><label>Cliente</label><input id="f-cliente"/></div>
-      <div><label>Telefone</label><input id="f-fone"/></div>
-      <div><label>CPF</label><input id="f-cpf"/></div>
       <div><label>Placa</label><input id="f-placa" placeholder="AAA0A00" pattern="[A-Z]{3}[0-9][A-Z0-9][0-9]{2}"/></div>
+      <div><label>Veículo</label><input id="f-veiculo" readonly /></div>
+      <div><label>Ano</label><input id="f-ano" readonly /></div>
+      <div><label>Mod</label><input id="f-mod" readonly /></div>
     </div>
-    <div id="hist" class="mini"></div>
   </div>
 
   <!-- ADICIONADOR VISUAL — PASSO A PASSO -->
@@ -383,21 +382,16 @@ document.getElementById('btn-all-ok').addEventListener('click', ()=>{
   alert('Todos os itens marcados como Ok');
 });
 
-function autoFillCliente(){
+function autoFillVeiculo(){
   const placa = document.getElementById('f-placa').value.trim();
-  const cpf = document.getElementById('f-cpf').value.trim();
-  const q = placa || cpf;
-  if(!q) return;
-  google.script.run.withSuccessHandler(res=>{
-    if(res && res.cliente){
-      document.getElementById('f-cliente').value = res.cliente.nome || '';
-      document.getElementById('f-fone').value = res.cliente.fone || '';
-      document.getElementById('hist').innerHTML = (res.historico||[]).map(h=>`<div>OS ${h.meta.os} - ${h.meta.status||''}</div>`).join('');
-    }
-  }).findCliente(q);
+  if(!placa) return;
+  google.script.run.withSuccessHandler(info=>{
+    document.getElementById('f-veiculo').value = info?.veiculo || '';
+    document.getElementById('f-ano').value = info?.ano || '';
+    document.getElementById('f-mod').value = info?.mod || '';
+  }).getVeiculo(placa);
 }
-document.getElementById('f-placa').addEventListener('blur', autoFillCliente);
-document.getElementById('f-cpf').addEventListener('blur', autoFillCliente);
+document.getElementById('f-placa').addEventListener('blur', autoFillVeiculo);
 
 document.getElementById('btn-pdf').addEventListener('click', ()=>window.print());
 
@@ -540,7 +534,7 @@ fileHier.addEventListener('change', e=>{
 function buildPayload(){
   return {
     meta:{ os:document.getElementById('f-os').value, entrada:document.getElementById('f-data-entrada').value, entrega:document.getElementById('f-data-entrega').value, resp:document.getElementById('f-resp').value, status:document.getElementById('osStatus').textContent },
-    cliente:{ nome:document.getElementById('f-cliente').value, fone:document.getElementById('f-fone').value, cpf:document.getElementById('f-cpf').value, placa:document.getElementById('f-placa').value },
+    veiculo:{ placa:document.getElementById('f-placa').value, veiculo:document.getElementById('f-veiculo').value, ano:document.getElementById('f-ano').value, mod:document.getElementById('f-mod').value },
     checklist: CHECKLIST,
     itens:getRows(),
     totais:{ pecas:document.getElementById('t-pecas').textContent, serv:document.getElementById('t-serv').textContent, acresc:Number(document.getElementById('t-acresc').value||0), geral:document.getElementById('t-geral').textContent }
@@ -561,10 +555,10 @@ function applyData(data){
   document.getElementById('f-data-entrada').value = data?.meta?.entrada || '';
   document.getElementById('f-data-entrega').value = data?.meta?.entrega || '';
   document.getElementById('f-resp').value = data?.meta?.resp || '';
-  document.getElementById('f-cliente').value = data?.cliente?.nome || '';
-  document.getElementById('f-fone').value = data?.cliente?.fone || '';
-  document.getElementById('f-cpf').value = data?.cliente?.cpf || '';
-  document.getElementById('f-placa').value = data?.cliente?.placa || '';
+  document.getElementById('f-placa').value = data?.veiculo?.placa || '';
+  document.getElementById('f-veiculo').value = data?.veiculo?.veiculo || '';
+  document.getElementById('f-ano').value = data?.veiculo?.ano || '';
+  document.getElementById('f-mod').value = data?.veiculo?.mod || '';
   document.getElementById('osNumber').textContent = data?.meta?.os || '';
   document.getElementById('osDate').textContent = data?.meta?.entrada || '';
   document.getElementById('osStatus').textContent = data?.meta?.status || 'Aberta';
@@ -597,11 +591,10 @@ function startNewOS(){
   document.getElementById('f-data-entrada').value = '';
   document.getElementById('f-data-entrega').value = '';
   document.getElementById('f-resp').value = '';
-  document.getElementById('f-cliente').value = '';
-  document.getElementById('f-fone').value = '';
-  document.getElementById('f-cpf').value = '';
   document.getElementById('f-placa').value = '';
-  document.getElementById('hist').innerHTML = '';
+  document.getElementById('f-veiculo').value = '';
+  document.getElementById('f-ano').value = '';
+  document.getElementById('f-mod').value = '';
   itemsEl.innerHTML = '';
   document.getElementById('itemsCard').style.display = 'none';
   document.getElementById('t-acresc').value = 0;
