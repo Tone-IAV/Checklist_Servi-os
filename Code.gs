@@ -1,6 +1,7 @@
 const SHEET_ID = '1nd7ILniGFRTDcqs15QwoRKWyNabsz_6BAzSiXfa4skQ';
 const TAB_NAME = 'OS';
 const HEADERS = ['meta','cliente','checklist','itens','totais'];
+const DATA_SHEET_ID = '1fGx1JHUVqZNKtEdwwErZYegHaDm3hH4TQhXeMfd4MW4';
 
 function getSheet(){
   const ss = SpreadsheetApp.openById(SHEET_ID);
@@ -76,6 +77,56 @@ function getNextOS(){
   return max + 1;
 }
 
+/* ======== Hierarquia (Sistemas/Serviços/Subsistemas) ======== */
+function readTable(tab){
+  const ss = SpreadsheetApp.openById(DATA_SHEET_ID);
+  const sh = ss.getSheetByName(tab);
+  if(!sh) return {headers:[], rows:[]};
+  const values = sh.getDataRange().getValues();
+  if(values.length === 0) return {headers:[], rows:[]};
+  const headers = values.shift().map(h=>String(h));
+  const rows = values
+    .filter(r=>r.some(c=>c!==''))
+    .map(r=>{
+      const o={};
+      headers.forEach((h,i)=>{ o[h.toLowerCase()] = r[i]; });
+      return o;
+    });
+  return {headers, rows};
+}
+
+function writeTable(tab, table){
+  const ss = SpreadsheetApp.openById(DATA_SHEET_ID);
+  let sh = ss.getSheetByName(tab);
+  if(!sh) sh = ss.insertSheet(tab);
+  sh.clearContents();
+  const headers = table.headers || [];
+  const rows = table.rows || [];
+  if(headers.length){
+    sh.getRange(1,1,1,headers.length).setValues([headers]);
+  }
+  if(rows.length){
+    const lower = headers.map(h=>h.toLowerCase());
+    const data = rows.map(r=> lower.map(k=> r[k]||''));
+    sh.getRange(2,1,data.length,headers.length).setValues(data);
+  }
+}
+
+function getTables(){
+  return {
+    sistemas: readTable('SISTEMAS'),
+    servicos: readTable('SERVIÇOS'),
+    subsistemas: readTable('SUBSISTEMAS')
+  };
+}
+
+function saveTables(data){
+  if(data.sistemas) writeTable('SISTEMAS', data.sistemas);
+  if(data.servicos) writeTable('SERVIÇOS', data.servicos);
+  if(data.subsistemas) writeTable('SUBSISTEMAS', data.subsistemas);
+  return true;
+}
+
 function findCliente(query){
   const sh = getSheet();
   const rows = sh.getRange(2,1,Math.max(sh.getLastRow()-1,0),HEADERS.length).getValues();
@@ -109,6 +160,8 @@ function getDashboard(){
   return c;
 }
 
-function doGet(){
-  return HtmlService.createHtmlOutputFromFile('Index');
+function doGet(e){
+  const page = e && e.parameter && e.parameter.page;
+  const file = page === 'editor' ? 'Editor' : 'Index';
+  return HtmlService.createHtmlOutputFromFile(file);
 }

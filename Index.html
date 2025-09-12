@@ -230,58 +230,9 @@
 
 <script>
 /* ======= Catálogo (igual ao seu) ======= */
-const HIERARQUIA = {
-  "Motor": {"Alimentação (Ar & Combustível)":[
-      "Filtro de ar","Corpo de borboleta","Bicos injetores","Bomba de combustível","Filtro de combustível",
-      "Linha de combustível","Coletor de admissão","Sensor MAP","Sensor MAF","Regulador de pressão"
-    ],
-    "Ignição":["Velas de ignição","Cabos de vela","Bobina(s) de ignição","Módulo de ignição"],
-    "Lubrificação":["Óleo do motor","Filtro de óleo","Cárter","Válvula PCV","Junta do cárter","Retentores"],
-    "Arrefecimento":["Radiador","Ventoinha/ventilador","Bomba d'água","Válvula termostática","Reservatório de expansão","Tampa do radiador/reservatório","Mangueiras de água","Sensor de temperatura","Junta do cabeçote"],
-    "Correias & Comando":["Correia dentada","Corrente de comando","Tensor/Esticador","Polias","Correia de acessórios"],
-    "Escape":["Coletor de escape","Catalisador","Sonda lambda (pré/pós)","Silencioso intermediário","Silencioso traseiro","Junta de escape"],
-    "Vedação":["Junta da tampa de válvulas","Retentor do virabrequim (dianteiro/traseiro)","Juntas diversas"]
-  },
-  "Transmissão/Tração":{"Embreagem (Manual)":["Kit embreagem (disco/platô/rolamento)","Cilindro mestre","Cilindro escravo","Cabo de embreagem"],
-    "Câmbio (Manual/Automatizado/Automático/CVT)":["Óleo do câmbio","Trambulador/linkagem","Retentores do câmbio"],
-    "Semieixos/Homocinéticas":["Semieixo","Junta homocinética","Coifa homocinética"],
-    "Diferencial/Transferência":["Óleo do diferencial","Caixa de transferência (4x4)"]
-  },
-  "Direção":{"Coluna de direção":["Junta cardan da coluna","Trava do volante"],
-    "Caixa/cremalheira":["Caixa de direção","Coifas/guarda-pós","Buchas da caixa","Bomba de direção (hidráulica)","Motor elétrico (EPS)"],
-    "Barras & Terminais":["Barra axial","Terminal de direção","Braço pitman (onde aplicável)"]
-  },
-  "Suspensão":{"Dianteira":["Amortecedor dianteiro","Mola helicoidal dianteira","Coxim/rolamento do amortecedor","Bandeja/bras oscilante","Bucha da bandeja","Pivô de suspensão","Bieleta","Barra estabilizadora","Buchas da barra estabilizadora","Rolamento de roda dianteiro"],
-    "Traseira":["Amortecedor traseiro","Mola traseira","Coxim traseiro","Buchas traseiras","Feixe de molas (utilitários)","Braços/tirantes","Rolamento de roda traseiro"]
-  },
-  "Freios":{"Dianteiro":["Pastilhas de freio dianteiras","Discos de freio dianteiros","Pinça de freio dianteira","Flexível de freio dianteiro"],
-    "Traseiro":["Lonas de freio","Tambor de freio","Cilindro de roda","Pinça traseira (se disco)","Discos traseiros (se aplicável)","Flexível de freio traseiro"],
-    "Hidráulico/Sistema":["Fluido de freio","Cilindro mestre","Servo-freio (hidrovácuo)","Válvula proporcional/reguladora"],
-    "ABS/Estabilidade":["Módulo ABS/ESP","Sensor de roda ABS","Anel reluctor"]
-  },
-  "Pneus & Rodas":{"Conjunto":["Pneu","Roda","Válvula","Calota","Estepe","Parafusos/porcas de roda","Cubo de roda"]},
-  "Elétrica/Eletrônica":{"Carga & Partida":["Bateria","Alternador","Motor de partida","Cabos/terminais de bateria"],
-    "Iluminação/Sinalização":["Faróis (conjunto/lâmpadas)","Lanternas traseiras","DRL","Luzes de freio","Setas/indicadores","Neblina"],
-    "Chicote & Proteção":["Chicote elétrico","Fusíveis","Relés","Caixa de fusíveis"],
-    "Sensores & Atuadores":["Sensor TPS","Sensor ECT (temperatura do motor)","Sensor CKP (rotação)","Sensor CMP (fase)","Atuador de marcha lenta"],
-    "Módulos/Computadores":["ECU do motor","TCU do câmbio","BCM","Módulo ABS","Módulo Airbag","Conector OBD"]
-  },
-  "Ar-Condicionado/Climatização":{"Sistema de A/C":["Compressor","Condensador","Evaporador","Válvula de expansão/orifício","Filtro secador","Filtro de cabine","Motor do ventilador interno","Pressostatos/sensores","Gás refrigerante & óleo do A/C"]},
-  "Carroceria & Fechaduras":{"Aberturas & Vedação":["Capô","Trava do capô","Portas","Porta-malas","Maçanetas","Dobradiças","Borrachas de vedação"],
-    "Vidros & Acionamentos":["Para-brisa","Vidros laterais","Regulador de vidro (elétrico/manual)","Travas elétricas","Retrovisores (espelho/motor)"],
-    "Externo":["Para-choques","Para-lamas","Frisos/defletores","Protetor de cárter"],
-    "Limpeza de Vidros":["Palhetas do limpador","Reservatório do limpador","Motor da bomba do limpador"]
-  },
-  "Segurança & Itens obrigatórios":{"Sistemas":["Cintos de segurança","Airbags","Sensores de colisão","ABS/ESP"],
-    "Itens de emergência":["Triângulo","Macaco","Chave de roda","Kit de primeiros socorros (quando aplicável)"]
-  },
-  "Documentação & Acessórios":{"Documentos & Itens":["CRLV-e (licenciamento)","Manual do proprietário","Chave reserva"],
-    "Acessórios":["Rádio/central multimídia","Alto-falantes","Alarme","Rastreador","Engate","Calhas de chuva","Sensor de estacionamento","Câmera de ré"]
-  },
-  "Diagnóstico & Testes":{"Procedimentos":["Scanner OBD (leitura/limpeza de DTCs)","Teste de compressão","Teste de fuga de CO₂ no arrefecimento","Teste de pressão de combustível","Teste de carga/partida","Vazão de bicos injetores","Alinhamento 3D","Balanceamento de rodas","Teste de rodagem"]}
-};
-const SERVICOS = ["Inspeção visual","Teste funcional","Diagnóstico com scanner","Leitura/limpeza de DTC","Limpeza/descarbonização","Ajuste/Calibração","Troca/Substituição","Reparo/Recondicionamento","Lubrificação","Reaperto/Torque","Sangria (freio/embreagem)","Alinhamento","Balanceamento","Regulagem de faróis","Recarga (bateria/A.C.)","Atualização de software","Regeneração DPF (diesel)","Vedação/Aplicação de junta/cola","Higienização do A.C.","Teste de rodagem/validação"];
-
+let HIERARQUIA = {};
+let SERVICOS = [];
+let SISTEMA_ICONES = {};
 const SYS_CAT = {
   "Motor":"mech",
   "Transmissão/Tração":"mech",
@@ -298,6 +249,32 @@ const SYS_CAT = {
 };
 
 const CHECKLIST = {};
+
+function loadHierarquia(){
+  google.script.run.withSuccessHandler(data=>{
+    const {sistemas, subsistemas, servicos} = data;
+    HIERARQUIA = {};
+    SISTEMA_ICONES = {};
+    (sistemas.rows || []).forEach(r=>{
+      const sys = r['sistema'];
+      if(!sys) return;
+      HIERARQUIA[sys] = HIERARQUIA[sys] || {};
+      SISTEMA_ICONES[sys] = r['icone'] || '';
+    });
+    (subsistemas.rows || []).forEach(r=>{
+      const sys = r['sistema'];
+      const sub = r['subsistemas'] || r['subsistema'];
+      const comp = r['componentes'] || r['componente'];
+      if(!sys || !sub || !comp) return;
+      if(!HIERARQUIA[sys]) HIERARQUIA[sys] = {};
+      if(!HIERARQUIA[sys][sub]) HIERARQUIA[sys][sub] = [];
+      HIERARQUIA[sys][sub].push(comp);
+    });
+    const servHeader = (servicos.headers[0] || '').toLowerCase();
+    SERVICOS = (servicos.rows || []).map(r=> r[servHeader]).filter(Boolean);
+    renderSistemas();
+  }).getTables();
+}
 
 /* ======= Utils ======= */
 const fmtBRL = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
@@ -316,7 +293,10 @@ function el(tag, attrs={}, ...children){ const e=document.createElement(tag); Ob
 
 /* ======= Ícones simples (SVG inline) por Sistema ======= */
 function sysIcon(name){
-  const base = 'style="width:26px;height:26px"';
+  if(SISTEMA_ICONES[name]){
+    return `<img src="${SISTEMA_ICONES[name]}" alt="${name}" style="width:64px;height:64px;border-radius:10px;object-fit:contain">`;
+  }
+  const base = 'width="64" height="64"';
   const map = {
     "Motor": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M3 9h6l2-2h4l3 3v6H3V9Z" stroke="#2563eb" stroke-width="1.5"/><path d="M14 7v3m-8 6h14" stroke="#2563eb" stroke-width="1.5"/></svg>`,
     "Transmissão/Tração": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="8" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/><circle cx="16" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/><path d="M11 12h2" stroke="#2563eb" stroke-width="1.5"/></svg>`,
@@ -742,8 +722,10 @@ document.getElementById('btn-new').addEventListener('click', ()=>{
 });
 
 /* start */
-renderSistemas();
-startNewOS();
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadHierarquia();
+  startNewOS();
+});
 </script>
 </body>
 </html>
