@@ -3,24 +3,747 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>OS Automotiva — Menu</title>
+<title>OS Automotiva — Seleção Visual</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
-<?!= HtmlService.createHtmlOutputFromFile("Styles").getContent(); ?>
+<style>
+  :root{
+    --bg:#f7fafc; --text:#0f172a; --muted:#64748b; --line:#e2e8f0; --card:#ffffff;
+    --primary:#2563eb; --primary-2:#60a5fa; --ok:#16a34a; --warn:#d97706; --bad:#ef4444;
+    --mech:#3b82f6; --safe:#f97316; --comfort:#16a34a;
+    --radius:14px;
+    font-size:22px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:1rem/1.5 Inter, system-ui, Segoe UI, Roboto, Arial}
+  .wrap{width:100%;max-width:none;margin:0;padding:16px}
+  header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
+  header h1{font-size:2rem;margin:0}
+  .badge{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;padding:8px 12px;border-radius:999px;font-weight:700}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:1rem}
+  .mini{font-size:1rem;color:var(--muted)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
+  .section-title{margin:0 0 10px 0;font-weight:700}
+  .grid{display:grid;gap:10px}
+  .g2{grid-template-columns: repeat(2, minmax(0,1fr))}
+  .g3{grid-template-columns: repeat(3, minmax(0,1fr))}
+  .g4{grid-template-columns: repeat(4, minmax(0,1fr))}
+  label{font-size:1rem;color:var(--muted);display:block;margin-bottom:6px}
+  input, select, textarea{
+    width:100%;background:#fff;border:1px solid #dbe6f1;color:var(--text);
+    border-radius:12px;padding:14px 16px;outline:none;transition:.2s;
+  }
+  input:focus, select:focus, textarea:focus{border-color:#93c5fd; box-shadow:0 0 0 3px #93c5fd55}
+  textarea{min-height:80px;resize:vertical}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:#f1f5f9;border:1px solid #dbe6f1;color:#0f172a;padding:18px 24px;border-radius:12px;cursor:pointer;font-size:1.2rem}
+  .btn:hover{background:#e9eef5}
+  .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-color:transparent}
+  .btn.ghost{background:#fff}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px}
+  .divider{height:1px;background:var(--line);margin:12px 0}
+  .items-head, .item-row{display:grid;grid-template-columns:1.1fr 1.1fr 1.2fr 0.8fr 1.1fr 1.3fr 0.7fr 0.8fr 1fr 0.6fr;gap:8px}
+  .items-head{font-size:1rem;color:var(--muted);margin-bottom:6px}
+  .item-row{margin-bottom:8px}
+  .item-actions{display:flex;gap:6px}
+  .totals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px}
+  .kpi .k{font-size:1rem;color:var(--muted)}
+  .kpi .v{font-weight:700}
+  /* --------- Seleção Visual (cards) --------- */
+  .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .tile{
+    display:flex;align-items:center;gap:16px;background:#ffffff;border:2px solid #dbe6f1;border-radius:16px;
+    padding:16px; cursor:pointer; min-height:100px; transition:.15s;
+  }
+  .tile:hover{border-color:#93c5fd; box-shadow:0 4px 16px #0f172a0d}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .tile .icon{width:80px;height:80px;flex:0 0 80px;border-radius:10px;display:grid;place-items:center;background:#eef5ff;border:1px solid #d4e4ff;font-size:2rem}
+  .tile.cat-mech{border-color:var(--mech)}
+  .tile.cat-safe{border-color:var(--safe)}
+  .tile.cat-comfort{border-color:var(--comfort)}
+  .tile.cat-mech .icon{border-color:var(--mech);background:rgba(59,130,246,.1)}
+  .tile.cat-safe .icon{border-color:var(--safe);background:rgba(249,115,22,.1)}
+  .tile.cat-comfort .icon{border-color:var(--comfort);background:rgba(22,163,74,.1)}
+  .tile .title{font-weight:700}
+  .tile .hint{font-size:1rem;color:var(--muted)}
+  .tile .sub-inputs{display:none;margin-top:6px}
+  .tile.active{border-color:#2563eb; background:#f5f9ff}
+  .tile.active .sub-inputs{display:block;animation:fadeIn .2s ease}
+  .tile.active .sub-inputs input{width:100%;border:1px solid #dbe6f1;border-radius:8px;padding:6px}
+  .row-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .search{display:flex;gap:8px;align-items:center}
+  .search input{flex:1}
+  .list-panel{border:1px dashed #cbd5e1;border-radius:12px;padding:10px;background:#fbfeff;max-height:none;overflow:visible}
+  .comp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .comp{display:flex;align-items:center;gap:14px;border:2px solid #e2e8f0;border-radius:14px;padding:18px;min-height:120px;background:#fff;cursor:pointer}
+  .comp:hover{border-color:#93c5fd}
+  .comp .icon{width:64px;height:64px;border-radius:10px;display:grid;place-items:center;background:#f4f7ff;border:1px solid #dbe6f1}
+  .comp .inputs{display:none;gap:8px;margin-top:6px}
+  .comp.active .inputs{display:flex;animation:fadeIn .2s ease}
+  .comp .inputs input{flex:1;border:1px solid #dbe6f1;border-radius:8px;padding:6px}
+  .comp .inputs input.qtd{flex:0 0 60px}
+  .comp .inputs input.val{flex:0 0 80px}
+  .comp .hint{font-size:1rem;color:var(--muted)}
+  .status{display:flex;gap:8px;margin-top:6px}
+  .status-btn{font-size:2rem;flex:0 0 60px;background:#fff;border:2px solid #e2e8f0;border-radius:12px;cursor:pointer}
+  .status-btn.ok{border-color:var(--ok)}
+  .status-btn.warn{border-color:var(--warn)}
+  .status-btn.bad{border-color:var(--bad)}
+  .comp.ok{border-color:var(--ok)}
+  .comp.warn{border-color:var(--warn)}
+  .comp.bad{border-color:var(--bad)}
+  .footer-note{font-size:1rem;color:var(--muted)}
+  @media (max-width:900px){
+    .tiles{grid-template-columns:1fr 1fr}
+    .comp-grid{grid-template-columns:1fr}
+    .items-head, .item-row{grid-template-columns:1fr 1fr 1fr 0.9fr 1.2fr 1fr 0.7fr 0.9fr 1fr 0.6fr}
+  }
+  @media (max-width:600px){
+    .tiles{grid-template-columns:1fr}
+    .wrap{padding:8px}
+    .card{border:none;border-radius:0;padding:14px 0;margin-bottom:10px}
+  }
+  @media print{ .btn, .toolbar, .list-panel, .tiles, .row-actions, .search{display:none !important} }
+</style>
 </head>
 <body>
-<?!= HtmlService.createHtmlOutputFromFile("Nav").getContent(); ?>
 <div class="wrap">
-  <header><h1>Menu</h1></header>
-  <div class="tiles">
-    <a class="tile" href="?page=checklist" target="_top">
-      <div class="icon">📝</div>
-      <div><div class="title">Novo Checklist</div><div class="hint">Iniciar manutenção</div></div>
-    </a>
-    <a class="tile" href="?page=editor" target="_top">
-      <div class="icon">⚙️</div>
-      <div><div class="title">Editor de Hierarquia</div><div class="hint">Gerenciar dados</div></div>
-    </a>
+  <header>
+    <span class="badge">Ordem de Serviço</span>
+    <h1>OS <span id="osNumber"></span></h1>
+    <span class="pill" id="osStatus">Aberta</span>
+    <span class="mini">Criada em <span id="osDate"></span></span>
+    <button class="btn ghost" id="btn-new" style="margin-left:auto">Nova OS</button>
+  </header>
+
+  <div class="card" id="dashCard">
+    <h3 class="section-title">Dashboard</h3>
+    <div class="totals">
+      <div class="kpi"><div class="k">Abertas</div><div class="v" id="d-abertas">0</div></div>
+      <div class="kpi"><div class="k">Aguardando Peça</div><div class="v" id="d-aguardando">0</div></div>
+      <div class="kpi"><div class="k">Concluídas</div><div class="v" id="d-concluidas">0</div></div>
+    </div>
+  </div>
+
+  <!-- DADOS BÁSICOS -->
+  <div class="card">
+    <h3 class="section-title">Dados</h3>
+    <div class="grid g4">
+      <div><label>Nº OS</label><input id="f-os" placeholder="(auto)"/></div>
+      <div><label>Entrada</label><input type="date" id="f-data-entrada"/></div>
+      <div><label>Entrega (prev.)</label><input type="date" id="f-data-entrega"/></div>
+      <div><label>Responsável</label><input id="f-resp" placeholder="Mecânico/Oficina"/></div>
+    </div>
+    <div class="grid g4" style="margin-top:8px">
+      <div><label>Cliente</label><input id="f-cliente"/></div>
+      <div><label>Telefone</label><input id="f-fone"/></div>
+      <div><label>CPF</label><input id="f-cpf"/></div>
+      <div><label>Placa</label><input id="f-placa" placeholder="AAA0A00" pattern="[A-Z]{3}[0-9][A-Z0-9][0-9]{2}"/></div>
+    </div>
+    <div id="hist" class="mini"></div>
+  </div>
+
+  <!-- ADICIONADOR VISUAL — PASSO A PASSO -->
+  <div class="card">
+    <h3 class="section-title">Adicionar itens (visual e em lote)</h3>
+
+    <div class="toolbar" style="justify-content:flex-end;margin-bottom:8px">
+      <button id="btn-all-ok" class="btn">Adicionar tudo normal</button>
+    </div>
+
+    <!-- Passo 1: Sistemas -->
+    <label>1) Escolha o <b>Sistema</b></label>
+    <div id="tiles-sistemas" class="tiles" aria-label="Sistemas"></div>
+    <div class="row-actions">
+      <button id="btn-export-hier" class="btn">Exportar Sistemas</button>
+      <button id="btn-import-hier" class="btn">Importar Sistemas</button>
+      <input type="file" id="file-hier" accept="application/json" style="display:none" />
+    </div>
+
+    <!-- Passo 2: SubSistemas -->
+    <div class="divider"></div>
+    <div class="row-actions">
+      <div class="search" style="flex:1">
+        <label style="margin:0;color:var(--muted)">2) Selecione SubSistema</label>
+        <input id="filtroSub" placeholder="Buscar SubSistemas…" />
+      </div>
+    </div>
+    <div id="panel-subs" class="list-panel">
+      <div id="subs" class="tiles"></div>
+    </div>
+
+    <!-- Passo 3: Componentes -->
+    <div class="divider"></div>
+    <div class="row-actions">
+      <div class="search" style="flex:1">
+        <label style="margin:0;color:var(--muted)">3) Selecione Componente</label>
+        <input id="filtroComp" placeholder="Buscar Componentes… (ex.: pastilha, correia)" />
+      </div>
+    </div>
+    <div id="panel-comps" class="list-panel">
+      <div id="comps" class="comp-grid"></div>
+    </div>
+
+    <!-- Opções & Prévia -->
+    <div class="divider"></div>
+    <div class="toolbar" style="justify-content:flex-end">
+      <button class="btn" id="btn-pdf">Exportar PDF</button>
+      <button class="btn" id="btn-finalizar">Finalizar checklist</button>
+      <button class="btn primary" id="btn-add-batch">Adicionar itens</button>
+    </div>
+  </div>
+
+  <!-- ITENS LANÇADOS (oculto) -->
+  <div class="card" id="itemsCard" style="display:none">
+    <div class="toolbar" style="justify-content:space-between;align-items:center">
+      <h3 class="section-title" style="margin:0">Itens da OS</h3>
+      <div class="toolbar">
+        <button class="btn" id="btn-add">+ Linha vazia</button>
+        <button class="btn" id="btn-export">Exportar CSV</button>
+        <button class="btn" id="btn-save">Salvar JSON</button>
+        <button class="btn" id="btn-load">Carregar JSON</button>
+      </div>
+    </div>
+
+    <div class="items-head">
+      <div>Sistema</div><div>SubSistema</div><div>Componente</div>
+      <div>Tipo</div><div>Serviço</div><div>Descrição/Peculiaridade</div>
+      <div>Qtd</div><div>Un</div><div>Preço (R$)</div><div></div>
+    </div>
+    <div id="items"></div>
+
+    <div class="divider"></div>
+    <div class="totals">
+      <div class="kpi"><div class="k">Total Peças</div><div class="v" id="t-pecas">R$ 0,00</div></div>
+      <div class="kpi"><div class="k">Total Serviços</div><div class="v" id="t-serv">R$ 0,00</div></div>
+      <div class="kpi"><div class="k">Acréscimos (R$)</div><input id="t-acresc" type="number" step="0.01" value="0"/></div>
+      <div class="kpi"><div class="k">Total Geral</div><div class="v" id="t-geral">R$ 0,00</div></div>
+    </div>
+  </div>
+
+  <div class="mini">Arquivo local. As imagens de referência foram mostradas acima para orientar a seleção (não são baixadas pelo formulário).</div>
+
+  <div class="card" id="sugestoes" style="display:none">
+    <h3 class="section-title">Sugestões</h3>
+    <ul id="sug-list"></ul>
   </div>
 </div>
+
+<script>
+/* ======= Catálogo (igual ao seu) ======= */
+const HIERARQUIA = {
+  "Motor": {"Alimentação (Ar & Combustível)":[
+      "Filtro de ar","Corpo de borboleta","Bicos injetores","Bomba de combustível","Filtro de combustível",
+      "Linha de combustível","Coletor de admissão","Sensor MAP","Sensor MAF","Regulador de pressão"
+    ],
+    "Ignição":["Velas de ignição","Cabos de vela","Bobina(s) de ignição","Módulo de ignição"],
+    "Lubrificação":["Óleo do motor","Filtro de óleo","Cárter","Válvula PCV","Junta do cárter","Retentores"],
+    "Arrefecimento":["Radiador","Ventoinha/ventilador","Bomba d'água","Válvula termostática","Reservatório de expansão","Tampa do radiador/reservatório","Mangueiras de água","Sensor de temperatura","Junta do cabeçote"],
+    "Correias & Comando":["Correia dentada","Corrente de comando","Tensor/Esticador","Polias","Correia de acessórios"],
+    "Escape":["Coletor de escape","Catalisador","Sonda lambda (pré/pós)","Silencioso intermediário","Silencioso traseiro","Junta de escape"],
+    "Vedação":["Junta da tampa de válvulas","Retentor do virabrequim (dianteiro/traseiro)","Juntas diversas"]
+  },
+  "Transmissão/Tração":{"Embreagem (Manual)":["Kit embreagem (disco/platô/rolamento)","Cilindro mestre","Cilindro escravo","Cabo de embreagem"],
+    "Câmbio (Manual/Automatizado/Automático/CVT)":["Óleo do câmbio","Trambulador/linkagem","Retentores do câmbio"],
+    "Semieixos/Homocinéticas":["Semieixo","Junta homocinética","Coifa homocinética"],
+    "Diferencial/Transferência":["Óleo do diferencial","Caixa de transferência (4x4)"]
+  },
+  "Direção":{"Coluna de direção":["Junta cardan da coluna","Trava do volante"],
+    "Caixa/cremalheira":["Caixa de direção","Coifas/guarda-pós","Buchas da caixa","Bomba de direção (hidráulica)","Motor elétrico (EPS)"],
+    "Barras & Terminais":["Barra axial","Terminal de direção","Braço pitman (onde aplicável)"]
+  },
+  "Suspensão":{"Dianteira":["Amortecedor dianteiro","Mola helicoidal dianteira","Coxim/rolamento do amortecedor","Bandeja/bras oscilante","Bucha da bandeja","Pivô de suspensão","Bieleta","Barra estabilizadora","Buchas da barra estabilizadora","Rolamento de roda dianteiro"],
+    "Traseira":["Amortecedor traseiro","Mola traseira","Coxim traseiro","Buchas traseiras","Feixe de molas (utilitários)","Braços/tirantes","Rolamento de roda traseiro"]
+  },
+  "Freios":{"Dianteiro":["Pastilhas de freio dianteiras","Discos de freio dianteiros","Pinça de freio dianteira","Flexível de freio dianteiro"],
+    "Traseiro":["Lonas de freio","Tambor de freio","Cilindro de roda","Pinça traseira (se disco)","Discos traseiros (se aplicável)","Flexível de freio traseiro"],
+    "Hidráulico/Sistema":["Fluido de freio","Cilindro mestre","Servo-freio (hidrovácuo)","Válvula proporcional/reguladora"],
+    "ABS/Estabilidade":["Módulo ABS/ESP","Sensor de roda ABS","Anel reluctor"]
+  },
+  "Pneus & Rodas":{"Conjunto":["Pneu","Roda","Válvula","Calota","Estepe","Parafusos/porcas de roda","Cubo de roda"]},
+  "Elétrica/Eletrônica":{"Carga & Partida":["Bateria","Alternador","Motor de partida","Cabos/terminais de bateria"],
+    "Iluminação/Sinalização":["Faróis (conjunto/lâmpadas)","Lanternas traseiras","DRL","Luzes de freio","Setas/indicadores","Neblina"],
+    "Chicote & Proteção":["Chicote elétrico","Fusíveis","Relés","Caixa de fusíveis"],
+    "Sensores & Atuadores":["Sensor TPS","Sensor ECT (temperatura do motor)","Sensor CKP (rotação)","Sensor CMP (fase)","Atuador de marcha lenta"],
+    "Módulos/Computadores":["ECU do motor","TCU do câmbio","BCM","Módulo ABS","Módulo Airbag","Conector OBD"]
+  },
+  "Ar-Condicionado/Climatização":{"Sistema de A/C":["Compressor","Condensador","Evaporador","Válvula de expansão/orifício","Filtro secador","Filtro de cabine","Motor do ventilador interno","Pressostatos/sensores","Gás refrigerante & óleo do A/C"]},
+  "Carroceria & Fechaduras":{"Aberturas & Vedação":["Capô","Trava do capô","Portas","Porta-malas","Maçanetas","Dobradiças","Borrachas de vedação"],
+    "Vidros & Acionamentos":["Para-brisa","Vidros laterais","Regulador de vidro (elétrico/manual)","Travas elétricas","Retrovisores (espelho/motor)"],
+    "Externo":["Para-choques","Para-lamas","Frisos/defletores","Protetor de cárter"],
+    "Limpeza de Vidros":["Palhetas do limpador","Reservatório do limpador","Motor da bomba do limpador"]
+  },
+  "Segurança & Itens obrigatórios":{"Sistemas":["Cintos de segurança","Airbags","Sensores de colisão","ABS/ESP"],
+    "Itens de emergência":["Triângulo","Macaco","Chave de roda","Kit de primeiros socorros (quando aplicável)"]
+  },
+  "Documentação & Acessórios":{"Documentos & Itens":["CRLV-e (licenciamento)","Manual do proprietário","Chave reserva"],
+    "Acessórios":["Rádio/central multimídia","Alto-falantes","Alarme","Rastreador","Engate","Calhas de chuva","Sensor de estacionamento","Câmera de ré"]
+  },
+  "Diagnóstico & Testes":{"Procedimentos":["Scanner OBD (leitura/limpeza de DTCs)","Teste de compressão","Teste de fuga de CO₂ no arrefecimento","Teste de pressão de combustível","Teste de carga/partida","Vazão de bicos injetores","Alinhamento 3D","Balanceamento de rodas","Teste de rodagem"]}
+};
+const SERVICOS = ["Inspeção visual","Teste funcional","Diagnóstico com scanner","Leitura/limpeza de DTC","Limpeza/descarbonização","Ajuste/Calibração","Troca/Substituição","Reparo/Recondicionamento","Lubrificação","Reaperto/Torque","Sangria (freio/embreagem)","Alinhamento","Balanceamento","Regulagem de faróis","Recarga (bateria/A.C.)","Atualização de software","Regeneração DPF (diesel)","Vedação/Aplicação de junta/cola","Higienização do A.C.","Teste de rodagem/validação"];
+
+const SYS_CAT = {
+  "Motor":"mech",
+  "Transmissão/Tração":"mech",
+  "Suspensão":"mech",
+  "Carroceria & Fechaduras":"mech",
+  "Diagnóstico & Testes":"mech",
+  "Direção":"safe",
+  "Freios":"safe",
+  "Pneus & Rodas":"safe",
+  "Segurança & Itens obrigatórios":"safe",
+  "Ar-Condicionado/Climatização":"comfort",
+  "Elétrica/Eletrônica":"comfort",
+  "Documentação & Acessórios":"comfort"
+};
+
+const CHECKLIST = {};
+
+/* ======= Utils ======= */
+const fmtBRL = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
+const toNumber = el => { const n = parseFloat(String(el?.value||"").replace(",",".")); return isFinite(n)?n:0; };
+function el(tag, attrs={}, ...children){ const e=document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>{ if(k==='class')e.className=v; else if(k==='html')e.innerHTML=v; else e.setAttribute(k,v); }); children.forEach(c=>e.append(c)); return e; }
+
+/* ======= Header auto ======= */
+(function initHeader(){
+  const now = new Date();
+  document.getElementById('osDate').textContent = now.toLocaleString('pt-BR');
+  const osId = '#' + now.getFullYear().toString().slice(2) + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + '-' + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('osNumber').textContent = osId;
+  document.getElementById('f-os').value = osId.replace('#','');
+  document.getElementById('f-data-entrada').valueAsDate = new Date();
+})();
+
+/* ======= Ícones simples (SVG inline) por Sistema ======= */
+function sysIcon(name){
+  const base = 'style="width:26px;height:26px"';
+  const map = {
+    "Motor": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M3 9h6l2-2h4l3 3v6H3V9Z" stroke="#2563eb" stroke-width="1.5"/><path d="M14 7v3m-8 6h14" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Transmissão/Tração": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="8" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/><circle cx="16" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/><path d="M11 12h2" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Direção": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#2563eb" stroke-width="1.5"/><path d="M12 7v5l4 2" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Suspensão": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M6 7l12 10M6 17L18 7" stroke="#2563eb" stroke-width="1.5"/><rect x="4" y="5" width="4" height="4" stroke="#2563eb" stroke-width="1.5"/><rect x="16" y="15" width="4" height="4" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Freios": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="7" stroke="#2563eb" stroke-width="1.5"/><path d="M12 5a7 7 0 017 7h-5a2 2 0 00-2-2V5Z" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Pneus & Rodas": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#2563eb" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Elétrica/Eletrônica": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h7l-1 8 11-12h-7l1-8Z" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Ar-Condicionado/Climatização": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M12 2v20M4 6l16 12M4 18L20 6" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Carroceria & Fechaduras": `<svg ${base} viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="10" rx="2" stroke="#2563eb" stroke-width="1.5"/><path d="M7 8l3-3h4l3 3" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Segurança & Itens obrigatórios": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4v5c0 4.418-3.582 8-8 8s-8-3.582-8-8V7l8-4Z" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Documentação & Acessórios": `<svg ${base} viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2" stroke="#2563eb" stroke-width="1.5"/><path d="M8 7h8M8 11h8" stroke="#2563eb" stroke-width="1.5"/></svg>`,
+    "Diagnóstico & Testes": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M4 16l4-8 4 8 4-6 4 6" stroke="#2563eb" stroke-width="1.5"/><rect x="3" y="3" width="18" height="4" rx="1" stroke="#2563eb" stroke-width="1.5"/></svg>`
+  };
+  return map[name] || `<svg ${base}></svg>`;
+}
+
+/* ======= Seleção Visual ======= */
+const tilesSistemas = document.getElementById('tiles-sistemas');
+const subsBox = document.getElementById('subs');
+const compsBox = document.getElementById('comps');
+const filtroSub = document.getElementById('filtroSub');
+const filtroComp = document.getElementById('filtroComp');
+
+let SYS = null;
+const SUBS = new Set();
+function renderSistemas(){
+  tilesSistemas.innerHTML='';
+  Object.keys(HIERARQUIA).forEach(sys=>{
+    const cat = SYS_CAT[sys] || 'mech';
+    const t = el('div',{class:`tile cat-${cat}`, tabindex:"0", role:"button", 'data-sys':sys});
+    t.innerHTML = `<div class="icon">${sysIcon(sys)}</div>
+                   <div style="flex:1"><div class="title">${sys}</div>
+                   <div class="hint">Clique para selecionar</div></div>`;
+    t.addEventListener('click', ()=>selectSistema(sys,t));
+    t.addEventListener('keypress', e=>{ if(e.key==='Enter'||e.key===' ') selectSistema(sys,t); });
+    tilesSistemas.appendChild(t);
+  });
+}
+function selectSistema(sys, tile){
+  if(SYS === sys){
+    if(confirm('Tem certeza que deseja desmarcar o item e subitens?')){
+      SYS = null;
+      SUBS.clear();
+      [...tilesSistemas.children].forEach(c=>{ c.classList.remove('active'); c.style.display=''; });
+      renderSubSistemas();
+      renderComponentes();
+    }
+    return;
+  }
+  SYS = sys;
+  SUBS.clear();
+  [...tilesSistemas.children].forEach(c=>{
+    c.classList.remove('active');
+    if(c !== tile) c.style.display='none';
+  });
+  tile.style.display='';
+  tile.classList.add('active');
+  renderSubSistemas();
+  renderComponentes();
+}
+function renderSubSistemas(){
+  subsBox.innerHTML='';
+  if(!SYS) return;
+  const subs = Object.keys(HIERARQUIA[SYS]);
+  subs.forEach(sub=>{
+    const t = el('div',{class:'tile', tabindex:"0", role:"button", 'data-sub':sub});
+    t.innerHTML = `<div class="icon">${sysIcon(SYS)}</div>
+                   <div style=\"flex:1\"><div class=\"title\">${sub}</div>
+                   <div class=\"hint\">Clique para selecionar</div>
+                   <div class=\"sub-inputs\"><input type=\"number\" class=\"sub-val\" placeholder=\"Valor\" value=\"0\"></div></div>`;
+    if(SUBS.has(sub)) t.classList.add('active');
+    function toggle(){
+      if(SUBS.has(sub)){
+        SUBS.delete(sub);
+        t.classList.remove('active');
+      }else{
+        SUBS.add(sub);
+        t.classList.add('active');
+      }
+      renderComponentes();
+    }
+    t.addEventListener('click', e=>{ if(e.target.closest('.sub-inputs')) return; toggle(); });
+    t.addEventListener('keypress', e=>{ if(e.key==='Enter'||e.key===' ') toggle(); });
+    subsBox.appendChild(t);
+  });
+  applyFilterSub();
+}
+function renderComponentes(){
+  compsBox.innerHTML='';
+  if(!SYS || SUBS.size===0) return;
+  SUBS.forEach(sub=>{
+    (HIERARQUIA[SYS][sub]||[]).forEach(comp=>{
+      const c = el('div',{class:'comp', 'data-comp':comp, 'data-sub':sub});
+      c.innerHTML = `<div class="icon">${sysIcon(SYS)}</div>
+                     <div style="flex:1"><div class="title">${comp}</div>
+                     <div class="hint">${sub}</div>
+                     <div class="status">
+                       <button type="button" class="status-btn ok" data-status="ok">✅</button>
+                       <button type="button" class="status-btn warn" data-status="warn">⚠️</button>
+                       <button type="button" class="status-btn bad" data-status="bad">❌</button>
+                       <button type="button" class="status-btn mic">🎤</button>
+                     </div>
+                     <div class="inputs">
+                       <input type="number" class="qtd" placeholder="Qtd" value="1">
+                       <input class="obs" placeholder="Obs">
+                       <input type="number" class="val" placeholder="Valor" value="0">
+                     </div>
+                     </div>`;
+      const buttons = c.querySelectorAll('.status-btn');
+      buttons.forEach(b=>b.addEventListener('click', e=>{
+        const st = b.getAttribute('data-status');
+        if(st){
+          c.dataset.status = st;
+          c.classList.remove('ok','warn','bad');
+          c.classList.add(st);
+          if(st==='ok'){ c.querySelector('.inputs').style.display='none'; }
+          else{ c.querySelector('.inputs').style.display='flex'; }
+          const obs=c.querySelector('.obs').value;
+          const val=parseFloat(c.querySelector('.val').value||0);
+          setStatus(SYS, sub, comp, st, obs, val);
+          updateSuggestions();
+        }else if(b.classList.contains('mic')){
+          startDictation(c.querySelector('.obs'));
+        }
+      }));
+      [c.querySelector('.obs'), c.querySelector('.val')].forEach(inp=>inp.addEventListener('input', ()=>{
+        const st = c.dataset.status || 'ok';
+        const obs=c.querySelector('.obs').value;
+        const val=parseFloat(c.querySelector('.val').value||0);
+        setStatus(SYS, sub, comp, st, obs, val);
+      }));
+      compsBox.appendChild(c);
+    });
+  });
+  applyFilterComp();
+}
+
+function setStatus(sys, sub, comp, status, obs='', val=0){
+  if(!CHECKLIST[sys]) CHECKLIST[sys] = {};
+  if(!CHECKLIST[sys][sub]) CHECKLIST[sys][sub] = {};
+  CHECKLIST[sys][sub][comp] = {status, obs, val};
+}
+
+function startDictation(input){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR) return;
+  const rec = new SR();
+  rec.lang = 'pt-BR';
+  rec.onresult = e=>{ input.value = e.results[0][0].transcript; };
+  rec.start();
+}
+
+function updateSuggestions(){
+  const sug=[];
+  const freios = CHECKLIST['Freios'];
+  if(freios){
+    Object.values(freios).forEach(obj=>{
+      Object.values(obj).forEach(it=>{ if(it.status==='bad') sug.push('Revisar pneus e rodas'); });
+    });
+  }
+  const list=document.getElementById('sug-list');
+  list.innerHTML = sug.map(s=>`<li>${s}</li>`).join('');
+  document.getElementById('sugestoes').style.display = sug.length ? 'block' : 'none';
+}
+
+/* Filtros */
+function applyFilterSub(){
+  const q = (filtroSub.value||'').toLowerCase();
+  [...subsBox.children].forEach(t=>{
+    const match = t.getAttribute('data-sub').toLowerCase().includes(q);
+    t.style.display = match ? '' : 'none';
+  });
+}
+function applyFilterComp(){
+  const q = (filtroComp.value||'').toLowerCase();
+  [...compsBox.children].forEach(c=>{
+    const txt = (c.getAttribute('data-comp')+' '+c.getAttribute('data-sub')).toLowerCase();
+    c.style.display = txt.includes(q) ? '' : 'none';
+  });
+}
+filtroSub.addEventListener('input', applyFilterSub);
+filtroComp.addEventListener('input', applyFilterComp);
+
+document.getElementById('btn-all-ok').addEventListener('click', ()=>{
+  Object.keys(HIERARQUIA).forEach(sys=>{
+    Object.entries(HIERARQUIA[sys]).forEach(([sub, comps])=>{
+      comps.forEach(comp=>setStatus(sys, sub, comp, 'ok'));
+    });
+  });
+  alert('Todos os itens marcados como Ok');
+});
+
+function autoFillCliente(){
+  const placa = document.getElementById('f-placa').value.trim();
+  const cpf = document.getElementById('f-cpf').value.trim();
+  const q = placa || cpf;
+  if(!q) return;
+  google.script.run.withSuccessHandler(res=>{
+    if(res && res.cliente){
+      document.getElementById('f-cliente').value = res.cliente.nome || '';
+      document.getElementById('f-fone').value = res.cliente.fone || '';
+      document.getElementById('hist').innerHTML = (res.historico||[]).map(h=>`<div>OS ${h.meta.os} - ${h.meta.status||''}</div>`).join('');
+    }
+  }).findCliente(q);
+}
+document.getElementById('f-placa').addEventListener('blur', autoFillCliente);
+document.getElementById('f-cpf').addEventListener('blur', autoFillCliente);
+
+document.getElementById('btn-pdf').addEventListener('click', ()=>window.print());
+
+google.script.run.withSuccessHandler(d=>{
+  document.getElementById('d-abertas').textContent = d.abertas;
+  document.getElementById('d-aguardando').textContent = d.aguardando;
+  document.getElementById('d-concluidas').textContent = d.concluidas;
+}).getDashboard();
+
+/* ======= Itens (linhas) ======= */
+const itemsEl = document.getElementById('items');
+function buildSelect(opts, placeholder="Selecione…"){ const s=document.createElement('select'); s.innerHTML=`<option value="">${placeholder}</option>`+opts.map(v=>`<option>${v}</option>`).join(''); return s; }
+function fillSystems(sel){ sel.innerHTML = `<option value="">Selecione…</option>` + Object.keys(HIERARQUIA).map(k=>`<option>${k}</option>`).join(''); }
+function createItemRow(prefill={}){
+  const row = el('div',{class:'item-row'});
+  const sSistema = el('select'); fillSystems(sSistema);
+  const sSub = el('select'); sSub.innerHTML = `<option value="">Selecione…</option>`;
+  const sComp = el('select'); sComp.innerHTML = `<option value="">Selecione…</option>`;
+  const sTipo = buildSelect(['Serviço','Peça'],'Tipo');
+  const sServ = buildSelect(SERVICOS,'Serviço');
+  const iDesc = el('input',{placeholder:'Peculiaridade (lado, marca, observações...)'});
+  const iQtd = el('input',{type:'number',step:'0.01', value: prefill.qtd ?? 1});
+  const sUn = buildSelect(['UN','H','L','KG','KIT'],'Unid');
+  const iPreco = el('input',{type:'number',step:'0.01', placeholder:'0,00'});
+  const actions = el('div',{class:'item-actions'});
+  const bDup = el('button',{class:'btn'},'Duplicar');
+  const bDel = el('button',{class:'btn'},'Remover');
+  actions.append(bDup,bDel);
+
+  sSistema.addEventListener('change', ()=>{
+    const sys = sSistema.value; sSub.innerHTML = `<option value="">Selecione…</option>`; sComp.innerHTML = `<option value="">Selecione…</option>`;
+    if(!sys) return; Object.keys(HIERARQUIA[sys]).forEach(sub=>{ const o=document.createElement('option'); o.textContent=sub; sSub.appendChild(o); });
+  });
+  sSub.addEventListener('change', ()=>{
+    const sys=sSistema.value, sub=sSub.value; sComp.innerHTML = `<option value="">Selecione…</option>`;
+    if(!sys||!sub) return; HIERARQUIA[sys][sub].forEach(c=>{ const o=document.createElement('option'); o.textContent=c; sComp.appendChild(o); });
+  });
+  sTipo.addEventListener('change', ()=>{
+    if(sTipo.value==='Peça' && !sServ.value) sServ.value='Troca/Substituição';
+    sUn.value = (sTipo.value==='Serviço') ? 'H' : 'UN';
+  });
+  [iQtd,iPreco,sTipo].forEach(elm=> elm.addEventListener('input', updateTotals));
+  bDel.addEventListener('click', ()=>{ row.remove(); updateTotals(); });
+  bDup.addEventListener('click', ()=>{ itemsEl.insertBefore(createItemRow(getRowData(row)), row.nextSibling); updateTotals(); });
+
+  // Prefill
+  if(prefill.sistema){ sSistema.value=prefill.sistema; sSistema.dispatchEvent(new Event('change')); }
+  if(prefill.sub){ sSub.value=prefill.sub; sSub.dispatchEvent(new Event('change')); }
+  if(prefill.comp){ sComp.value=prefill.comp; }
+  if(prefill.tipo){ sTipo.value=prefill.tipo; sTipo.dispatchEvent(new Event('change')); }
+  if(prefill.serv){ sServ.value=prefill.serv; }
+  if(prefill.desc){ iDesc.value=prefill.desc; }
+  if(typeof prefill.preco!=='undefined'){ iPreco.value=prefill.preco; }
+  if(prefill.un){ sUn.value=prefill.un; }
+
+  row.append(sSistema,sSub,sComp,sTipo,sServ,iDesc,iQtd,sUn,iPreco,actions);
+  return row;
+}
+function getRowData(row){
+  const [sistema, sub, comp, tipo, serv, desc, qtd, un, preco] = [...row.children].slice(0,9).map(el=> el.value);
+  return {sistema, sub, comp, tipo, serv, desc, qtd:Number(qtd||0), un, preco:Number(String(preco).replace(',','.'))};
+}
+function updateTotals(){
+  let tp=0, ts=0;
+  [...itemsEl.children].forEach(row=>{
+    const {tipo,qtd,preco} = getRowData(row);
+    const line = (qtd||0)*(preco||0);
+    if(tipo==='Peça') tp+=line; else ts+=line;
+  });
+  const acresc = toNumber(document.getElementById('t-acresc'));
+  const geral = tp + ts + acresc;
+  document.getElementById('t-pecas').textContent = fmtBRL(tp);
+  document.getElementById('t-serv').textContent  = fmtBRL(ts);
+  document.getElementById('t-geral').textContent = fmtBRL(geral);
+}
+document.getElementById('t-acresc').addEventListener('input', updateTotals);
+document.getElementById('btn-add').addEventListener('click', ()=>{ itemsEl.appendChild(createItemRow()); updateTotals(); });
+
+/* ======= Adição em lote ======= */
+document.getElementById('btn-add-batch').addEventListener('click', ()=>{
+  const ativos = [...compsBox.querySelectorAll('.comp')].filter(c=>c.dataset.status && c.dataset.status!=='ok');
+  if(!ativos.length) return;
+  ativos.forEach(c=>{
+    const sub = c.getAttribute('data-sub');
+    const comp = c.getAttribute('data-comp');
+    const tipo = 'Peça';
+    const desc = c.querySelector('.obs').value;
+    const qtd  = parseFloat(c.querySelector('.qtd').value || '1');
+    const preco= parseFloat(c.querySelector('.val').value || '0');
+    const un   = 'UN';
+    const base = { sistema:SYS, sub, comp, tipo, serv:(tipo==='Peça')?'Troca/Substituição':'Teste funcional', desc, qtd, un, preco };
+    itemsEl.appendChild(createItemRow(base));
+    c.dataset.status='ok';
+    c.classList.remove('warn','bad');
+    c.querySelector('.inputs').style.display='none';
+  });
+  updateTotals();
+  document.getElementById('itemsCard').style.display='block';
+});
+
+/* ======= Exportar / Salvar / Carregar ======= */
+function getRows(){ return [...itemsEl.children].map(getRowData); }
+function download(filename, text, mime='text/plain'){ const blob=new Blob([text],{type:mime}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url); a.remove();},0); }
+document.getElementById('btn-export').addEventListener('click', ()=>{
+  const head = ["Sistema","SubSistema","Componente","Tipo","Serviço","Descrição","Qtd","Un","Preço"];
+  const lines = [head.join(';')].concat(getRows().map(it=>[
+    it.sistema||'', it.sub||'', it.comp||'', it.tipo||'', it.serv||'',
+    (it.desc||'').replace(/;/g,','), it.qtd||0, it.un||'', (it.preco||0)
+  ].join(';')));
+  download(`OS_${document.getElementById('f-os').value||'itens'}.csv`, lines.join('\n'), 'text/csv;charset=utf-8;');
+});
+document.getElementById('btn-export-hier').addEventListener('click', ()=>{
+  download('hierarquia.json', JSON.stringify(HIERARQUIA, null, 2), 'application/json');
+});
+const fileHier = document.getElementById('file-hier');
+document.getElementById('btn-import-hier').addEventListener('click', ()=> fileHier.click());
+fileHier.addEventListener('change', e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(!data || typeof data !== 'object') throw new Error('JSON inválido');
+      Object.keys(HIERARQUIA).forEach(k=>delete HIERARQUIA[k]);
+      Object.assign(HIERARQUIA, data);
+      SYS = null;
+      SUBS.clear();
+      renderSistemas();
+      renderSubSistemas();
+      renderComponentes();
+      alert('Hierarquia importada!');
+    }catch(err){
+      alert('Erro ao importar: '+err.message);
+    }
+  };
+  reader.readAsText(f);
+  e.target.value='';
+});
+function buildPayload(){
+  return {
+    meta:{ os:document.getElementById('f-os').value, entrada:document.getElementById('f-data-entrada').value, entrega:document.getElementById('f-data-entrega').value, resp:document.getElementById('f-resp').value, status:document.getElementById('osStatus').textContent },
+    cliente:{ nome:document.getElementById('f-cliente').value, fone:document.getElementById('f-fone').value, cpf:document.getElementById('f-cpf').value, placa:document.getElementById('f-placa').value },
+    checklist: CHECKLIST,
+    itens:getRows(),
+    totais:{ pecas:document.getElementById('t-pecas').textContent, serv:document.getElementById('t-serv').textContent, acresc:Number(document.getElementById('t-acresc').value||0), geral:document.getElementById('t-geral').textContent }
+  };
+}
+function saveChecklist(msg='Dados salvos!'){
+  const payload = buildPayload();
+  google.script.run
+    .withSuccessHandler(()=>alert(msg))
+    .withFailureHandler(err=>alert('Erro ao salvar: '+err.message))
+    .saveOS(payload);
+}
+document.getElementById('btn-save').addEventListener('click', ()=>saveChecklist('Dados salvos!'));
+document.getElementById('btn-finalizar').addEventListener('click', ()=>saveChecklist('Checklist finalizado!'));
+
+function applyData(data){
+  document.getElementById('f-os').value = data?.meta?.os || '';
+  document.getElementById('f-data-entrada').value = data?.meta?.entrada || '';
+  document.getElementById('f-data-entrega').value = data?.meta?.entrega || '';
+  document.getElementById('f-resp').value = data?.meta?.resp || '';
+  document.getElementById('f-cliente').value = data?.cliente?.nome || '';
+  document.getElementById('f-fone').value = data?.cliente?.fone || '';
+  document.getElementById('f-cpf').value = data?.cliente?.cpf || '';
+  document.getElementById('f-placa').value = data?.cliente?.placa || '';
+  document.getElementById('osNumber').textContent = data?.meta?.os || '';
+  document.getElementById('osDate').textContent = data?.meta?.entrada || '';
+  document.getElementById('osStatus').textContent = data?.meta?.status || 'Aberta';
+  itemsEl.innerHTML = '';
+  (data?.itens||[]).forEach(it => itemsEl.appendChild(createItemRow(it)));
+  document.getElementById('itemsCard').style.display = (data?.itens?.length) ? 'block' : 'none';
+  document.getElementById('t-acresc').value = data?.totais?.acresc ?? 0;
+  Object.keys(CHECKLIST).forEach(k=>delete CHECKLIST[k]);
+  Object.assign(CHECKLIST, data?.checklist || {});
+  updateTotals();
+  updateSuggestions();
+}
+
+document.getElementById('btn-load').addEventListener('click', ()=>{
+  const os = prompt('Número da OS a carregar:');
+  if(!os) return;
+  google.script.run
+    .withSuccessHandler(res=>{ if(res) applyData(res); else alert('OS não encontrada'); })
+    .withFailureHandler(err=>alert('Erro ao carregar: '+err.message))
+    .loadOS(os);
+});
+
+function startNewOS(){
+  google.script.run.withSuccessHandler(num=>{
+    document.getElementById('f-os').value = num;
+    document.getElementById('osNumber').textContent = num;
+  }).getNextOS();
+  document.getElementById('osDate').textContent = new Date().toLocaleDateString('pt-BR');
+  document.getElementById('osStatus').textContent = 'Aberta';
+  document.getElementById('f-data-entrada').value = '';
+  document.getElementById('f-data-entrega').value = '';
+  document.getElementById('f-resp').value = '';
+  document.getElementById('f-cliente').value = '';
+  document.getElementById('f-fone').value = '';
+  document.getElementById('f-cpf').value = '';
+  document.getElementById('f-placa').value = '';
+  document.getElementById('hist').innerHTML = '';
+  itemsEl.innerHTML = '';
+  document.getElementById('itemsCard').style.display = 'none';
+  document.getElementById('t-acresc').value = 0;
+  Object.keys(CHECKLIST).forEach(k=>delete CHECKLIST[k]);
+  updateTotals();
+  updateSuggestions();
+}
+
+document.getElementById('btn-new').addEventListener('click', ()=>{
+  if(confirm('Iniciar nova OS? Dados não salvos serão perdidos.')) startNewOS();
+});
+
+/* start */
+renderSistemas();
+startNewOS();
+</script>
 </body>
 </html>
