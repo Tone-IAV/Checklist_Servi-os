@@ -1,11 +1,17 @@
-const SHEET_ID = '1nd7ILniGFRTDcqs15QwoRKWyNabsz_6BAzSiXfa4skQ';
+const SHEET_ID = '1fGx1JHUVqZNKtEdwwErZYegHaDm3hH4TQhXeMfd4MW4';
 const TAB_NAME = 'OS';
 const HEADERS = ['meta','veiculo','checklist','itens','totais'];
-const DATA_SHEET_ID = '1fGx1JHUVqZNKtEdwwErZYegHaDm3hH4TQhXeMfd4MW4';
+const DATA_SHEET_ID = SHEET_ID;
+
+function getSheetByNameInsensitive(ss, name){
+  const normalize = s => s.toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const target = normalize(name);
+  return ss.getSheets().find(sh=> normalize(sh.getName()) === target) || null;
+}
 
 function getSheet(){
   const ss = SpreadsheetApp.openById(SHEET_ID);
-  let sh = ss.getSheetByName(TAB_NAME);
+  let sh = getSheetByNameInsensitive(ss, TAB_NAME);
   if(!sh){
     sh = ss.insertSheet(TAB_NAME);
     sh.appendRow(HEADERS);
@@ -83,7 +89,7 @@ function getNextOS(){
 /* ======== Hierarquia (Sistemas/Serviços/Subsistemas) ======== */
 function readTable(tab){
   const ss = SpreadsheetApp.openById(DATA_SHEET_ID);
-  const sh = ss.getSheetByName(tab);
+  const sh = getSheetByNameInsensitive(ss, tab);
   if(!sh) return {headers:[], rows:[]};
   const values = sh.getDataRange().getValues();
   if(values.length === 0) return {headers:[], rows:[]};
@@ -100,7 +106,7 @@ function readTable(tab){
 
 function writeTable(tab, table){
   const ss = SpreadsheetApp.openById(DATA_SHEET_ID);
-  let sh = ss.getSheetByName(tab);
+  let sh = getSheetByNameInsensitive(ss, tab);
   if(!sh) sh = ss.insertSheet(tab);
   sh.clearContents();
   const headers = table.headers || [];
@@ -133,7 +139,7 @@ function saveTables(data){
 function getVeiculo(placa){
   if(!placa) return null;
   const ss = SpreadsheetApp.openById(DATA_SHEET_ID);
-  const sh = ss.getSheetByName('VEICULOS');
+  const sh = getSheetByNameInsensitive(ss, 'VEICULOS');
   if(!sh) return null;
   const values = sh.getDataRange().getValues();
   for(let i=1;i<values.length;i++){
@@ -147,7 +153,7 @@ function getVeiculo(placa){
 
 function listPlacas(){
   const ss = SpreadsheetApp.openById(DATA_SHEET_ID);
-  const sh = ss.getSheetByName('VEICULOS');
+  const sh = getSheetByNameInsensitive(ss, 'VEICULOS');
   if(!sh) return [];
   const values = sh.getDataRange().getValues();
   const placas = [];
