@@ -11,7 +11,7 @@
     --primary:#2563eb; --primary-2:#60a5fa; --ok:#16a34a; --warn:#d97706; --bad:#ef4444;
     --mech:#3b82f6; --safe:#f97316; --comfort:#16a34a;
     --radius:14px;
-    font-size:22px;
+    font-size:clamp(16px,2.6vw,20px);
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font:1rem/1.5 Inter, system-ui, Segoe UI, Roboto, Arial}
@@ -22,6 +22,26 @@
   .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:1rem}
   .mini{font-size:1rem;color:var(--muted)}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
+  .card.compact{padding:12px}
+  #data-card{position:relative}
+  .vehicle-summary{display:none;flex-direction:column;gap:10px;margin-bottom:14px}
+  .vehicle-summary__main{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .vehicle-chip{padding:6px 14px;border-radius:999px;background:rgba(37,99,235,.1);color:var(--primary);font-weight:700;font-size:1.05rem}
+  .vehicle-chip.placa{background:rgba(22,163,74,.12);color:var(--ok)}
+  .vehicle-summary__meta{display:flex;gap:14px;flex-wrap:wrap}
+  .vehicle-summary__meta div{display:flex;flex-direction:column;gap:2px;font-size:.95rem}
+  .vehicle-summary__meta .label{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+  .vehicle-summary__meta .value{font-weight:700;color:var(--text)}
+  .vehicle-summary__toggle{align-self:flex-start;background:none;border:none;color:var(--primary);font-weight:600;padding:0;margin:4px 0 0;display:none;align-items:center;gap:6px;font-size:1rem;cursor:pointer}
+  .vehicle-summary__toggle:hover{text-decoration:underline}
+  .vehicle-summary__toggle::after{content:'\2195';font-size:1.2rem;line-height:1}
+  .vehicle-summary__toggle:focus-visible{outline:2px solid rgba(37,99,235,.45);outline-offset:4px;border-radius:6px}
+  #data-card.has-selection #vehicle-summary{display:flex}
+  #data-card.has-selection .vehicle-summary__toggle{display:inline-flex}
+  #data-card.has-selection .vehicle-chip{animation:fadeIn .25s ease}
+  .vehicle-fields{display:flex;flex-direction:column;gap:10px}
+  #data-card.show-fields .vehicle-summary__toggle::after{content:'\2191'}
+  #data-card.show-fields .vehicle-summary__toggle{color:var(--muted)}
   .section-title{margin:0 0 10px 0;font-weight:700;font-size:1.4rem}
   .grid{display:grid;gap:10px}
   .g2{grid-template-columns: repeat(2, minmax(0,1fr))}
@@ -46,6 +66,7 @@
     display:flex;align-items:flex-start;gap:18px;padding:18px 20px;margin-bottom:20px;
     background:linear-gradient(135deg,#f8fbff,#eef3ff);border-radius:22px;border:1px solid #dbe6f1;
   }
+  .step{scroll-margin-top:84px}
   .step-number{
     width:64px;height:64px;border-radius:20px;display:grid;place-items:center;
     background:linear-gradient(135deg,var(--primary),var(--primary-2));
@@ -76,6 +97,7 @@
     background:linear-gradient(145deg,#ffffff,#f3f7fb);padding:24px;border-radius:24px;min-height:210px;
     box-shadow:0 18px 40px rgba(15,23,42,.08);border:none;transition:transform .2s ease, box-shadow .2s ease;
     overflow:hidden;
+    touch-action:manipulation;
   }
   .tile::after{
     content:"";position:absolute;top:0;right:0;width:22px;height:100%;
@@ -94,16 +116,19 @@
     font-size:1.2rem;color:#fff;background:var(--accent);box-shadow:0 8px 20px rgba(15,23,42,.15);
   }
   .tile .icon{
-    position:relative;z-index:1;width:72px;height:72px;border-radius:20px;display:grid;place-items:center;font-size:2rem;
-    background:rgba(37,99,235,.08);color:var(--accent);overflow:hidden;
+    position:relative;z-index:1;width:92px;height:92px;border-radius:24px;display:grid;place-items:center;
+    font-size:2.4rem;color:var(--accent);overflow:hidden;background:transparent;
   }
-  .tile .icon img{width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(15,23,42,.15));}
-  .tile .icon span{font-weight:700;font-size:1.4rem;}
+  .tile .icon img{width:68px;height:68px;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(15,23,42,.12));}
+  .tile .icon span{font-weight:700;font-size:1.6rem;}
+  .tile .icon svg{width:68px;height:68px;stroke:currentColor;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
   .tile-body{position:relative;z-index:1;display:flex;flex-direction:column;gap:8px;width:100%;flex:1}
   .tile .title{font-weight:800;font-size:1.25rem}
   .tile .hint{font-size:1.05rem;color:var(--muted)}
   .tile .sub-inputs{display:none;margin-top:8px;width:100%}
   .tile .sub-inputs input{width:100%;border:1px solid #dbe6f1;border-radius:12px;padding:10px 12px;font-size:1.05rem}
+  #subs .tile{--accent:var(--primary)}
+  #subs .tile .icon{color:var(--primary)}
   .tile.cat-mech{--accent:var(--mech)}
   .tile.cat-safe{--accent:var(--safe)}
   .tile.cat-comfort{--accent:var(--comfort)}
@@ -117,37 +142,57 @@
   .row-actions{display:flex;gap:8px;flex-wrap:wrap}
   .search{display:flex;gap:8px;align-items:center}
   .search input{flex:1}
-  .list-panel{border:1px dashed #cbd5e1;border-radius:18px;padding:16px;background:#fbfeff;max-height:none;overflow:visible}
+  .list-panel{border:1px dashed #cbd5e1;border-radius:18px;padding:16px;background:#fbfeff;max-height:min(70vh,560px);overflow:auto;-webkit-overflow-scrolling:touch}
+  #panel-comps{max-height:min(75vh,620px)}
   .comp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-  .comp{display:flex;align-items:center;gap:14px;border:2px solid #e2e8f0;border-radius:18px;padding:20px;min-height:130px;background:#fff;cursor:pointer;font-size:1.05rem}
-  .comp:hover{border-color:#93c5fd}
-  .comp .icon{width:64px;height:64px;border-radius:10px;display:grid;place-items:center;background:#f4f7ff;border:1px solid #dbe6f1}
+  .comp{display:flex;align-items:flex-start;gap:16px;border:2px solid #e2e8f0;border-radius:22px;padding:20px 22px;min-height:140px;background:#fff;cursor:pointer;font-size:1.05rem;transition:border-color .2s ease, box-shadow .2s ease;touch-action:manipulation;}
+  .comp:hover{border-color:#93c5fd;box-shadow:0 12px 26px rgba(15,23,42,.12)}
+  .comp .icon{width:80px;height:80px;border-radius:20px;display:grid;place-items:center;background:transparent;border:none;color:var(--primary);}
+  .comp .icon svg{width:64px;height:64px;stroke:currentColor;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
   .comp .inputs{display:none;gap:8px;margin-top:6px;flex-wrap:wrap}
   .comp.selected .inputs{display:flex;animation:fadeIn .2s ease}
   .comp .inputs input{flex:1;border:1px solid #dbe6f1;border-radius:8px;padding:8px;font-size:1.05rem}
   .comp .inputs input.qtd{flex:0 0 60px}
   .comp .inputs input.val{flex:0 0 80px}
   .comp .hint{font-size:1.05rem;color:var(--muted)}
-  .actions{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
-  .action-btn{flex:0 0 auto;background:#fff;border:2px solid #e2e8f0;border-radius:14px;padding:10px 18px;font-size:1.05rem;cursor:pointer;transition:.2s;font-weight:600}
+  .actions{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+  .action-btn{flex:0 0 auto;background:#fff;border:2px solid #e2e8f0;border-radius:18px;padding:12px 20px;font-size:1.05rem;cursor:pointer;transition:.2s;font-weight:600}
   .action-btn:hover{border-color:var(--primary);color:var(--primary)}
   .action-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
   .comp.selected{border-color:var(--primary)}
   .comp.acao-reparo{border-color:var(--warn)}
   .comp.acao-troca{border-color:var(--bad)}
+  .comp.acao-reparo .icon{color:var(--warn)}
+  .comp.acao-troca .icon{color:var(--bad)}
   .footer-note{font-size:1rem;color:var(--muted)}
   @media (max-width:900px){
-    .tiles{grid-template-columns:1fr 1fr}
+    .wrap{padding:12px}
+    .tiles{grid-template-columns:1fr}
+    .tile{min-height:auto;padding:20px;border-radius:20px}
+    .tile .icon{width:82px;height:82px}
+    .tile .icon img,.tile .icon svg{width:58px;height:58px}
+    .step{flex-direction:column;padding:16px 18px}
+    .step-number{width:68px;height:68px}
+    .step-body{width:100%}
     .comp-grid{grid-template-columns:1fr}
     .items-head, .item-row{grid-template-columns:1fr 1fr 1fr 0.9fr 1.2fr 1fr 0.7fr 0.9fr 1fr 0.6fr}
-    .step{flex-direction:column}
-    .step-number{width:72px;height:72px}
+    .comp{flex-direction:column;padding:18px 16px}
+    .comp .icon{width:70px;height:70px}
+    .comp .icon svg{width:54px;height:54px}
+    .actions{width:100%}
+    .comp .inputs{flex-direction:column;width:100%}
+    .comp .inputs input{flex:1;width:100%}
+    .list-panel{padding:14px}
+    .action-btn{flex:1;justify-content:center}
+    #data-card.has-selection:not(.show-fields) .vehicle-fields{display:none}
+    #data-card.has-selection:not(.show-fields) .vehicle-summary__toggle::after{content:'\2193'}
   }
   @media (max-width:600px){
     .tiles{grid-template-columns:1fr}
-    .wrap{padding:8px}
+    .wrap{padding:10px}
     .card{border:none;border-radius:0;padding:14px 0;margin-bottom:10px}
-    .step{padding:16px 14px}
+    .step{padding:14px 12px}
+    .vehicle-summary__meta div{font-size:.9rem}
   }
   @media print{ .btn, .toolbar, .list-panel, .tiles, .row-actions, .search{display:none !important} }
 </style>
@@ -155,23 +200,36 @@
 <body>
 <div class="wrap">
   <!-- DADOS BÁSICOS -->
-  <div class="card">
+  <div class="card" id="data-card">
     <h3 class="section-title">Dados</h3>
     <input type="hidden" id="f-os" />
-    <div class="grid g2">
-      <div><label>Entrada</label><input id="f-data-entrada" readonly/></div>
-      <div><label>Oficina</label><input id="f-resp" placeholder="Nome da oficina"/></div>
-    </div>
-    <div class="grid g4" style="margin-top:8px">
-      <div>
-        <label>Placa</label>
-        <select id="f-placa">
-          <option value="">Selecione a placa</option>
-        </select>
+    <div id="vehicle-summary" class="vehicle-summary" hidden>
+      <div class="vehicle-summary__main">
+        <span class="vehicle-chip placa" id="sum-placa"></span>
+        <span class="vehicle-chip" id="sum-veiculo"></span>
       </div>
-      <div><label>Veículo</label><input id="f-veiculo" readonly/></div>
-      <div><label>Ano/Modelo</label><input id="f-ano-modelo" readonly/></div>
-      <div><label>Motorista</label><input id="f-motorista" readonly/></div>
+      <div class="vehicle-summary__meta">
+        <div><span class="label">Ano/Modelo</span><span class="value" id="sum-ano"></span></div>
+        <div><span class="label">Motorista</span><span class="value" id="sum-motorista"></span></div>
+      </div>
+      <button type="button" id="vehicle-summary-toggle" class="vehicle-summary__toggle" aria-expanded="false">Alterar dados</button>
+    </div>
+    <div class="vehicle-fields" id="vehicle-fields">
+      <div class="grid g2">
+        <div><label>Entrada</label><input id="f-data-entrada" readonly/></div>
+        <div><label>Oficina</label><input id="f-resp" placeholder="Nome da oficina"/></div>
+      </div>
+      <div class="grid g4" style="margin-top:8px">
+        <div>
+          <label>Placa</label>
+          <select id="f-placa">
+            <option value="">Selecione a placa</option>
+          </select>
+        </div>
+        <div><label>Veículo</label><input id="f-veiculo" readonly/></div>
+        <div><label>Ano/Modelo</label><input id="f-ano-modelo" readonly/></div>
+        <div><label>Motorista</label><input id="f-motorista" readonly/></div>
+      </div>
     </div>
     <div id="hist" class="mini"></div>
   </div>
@@ -181,7 +239,7 @@
     <h3 class="section-title">Adicionar itens (visual e em lote)</h3>
 
     <!-- Passo 1: Sistemas -->
-    <div class="step">
+    <div class="step" id="step-sistemas">
       <div class="step-number">1</div>
       <div class="step-body">
         <div class="step-title">Escolha o Sistema</div>
@@ -198,7 +256,7 @@
     </div>
 
     <!-- Passo 2: SubSistemas -->
-    <div class="step">
+    <div class="step" id="step-subs">
       <div class="step-number">2</div>
       <div class="step-body">
         <div class="step-title">Escolha o SubSistema</div>
@@ -216,7 +274,7 @@
     </div>
 
     <!-- Passo 3: Componentes -->
-    <div class="step">
+    <div class="step" id="step-comps">
       <div class="step-number">3</div>
       <div class="step-body">
         <div class="step-title">Escolha o Componente</div>
@@ -234,7 +292,7 @@
     </div>
 
     <!-- Passo 4: Finalização -->
-    <div class="step">
+    <div class="step" id="step-final">
       <div class="step-number">4</div>
       <div class="step-body">
         <div class="step-title">Finalize o Checklist</div>
@@ -412,12 +470,38 @@ function sysIcon(name){
   return `<span>${letter}</span>`;
 }
 
+const SUB_ICONS = [
+  `<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false" stroke="currentColor" stroke-width="3" fill="none"><path d="M8 12h32M12 24h24M16 36h16"></path></svg>`,
+  `<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false" stroke="currentColor" stroke-width="3" fill="none"><path d="M12 10h24v8H12zM8 24h16v8H8zM28 24h12v8H28z"></path></svg>`,
+  `<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false" stroke="currentColor" stroke-width="3" fill="none"><path d="M10 18l14-8 14 8-14 8zM10 32l14-8 14 8-14 8z"></path></svg>`
+];
+
+const COMP_ICONS = [
+  `<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false" stroke="currentColor" stroke-width="3" fill="none"><circle cx="24" cy="24" r="10"></circle><path d="M24 8v8M24 32v8M8 24h8M32 24h8M15 15l5 5M28 28l5 5M33 15l-5 5M15 33l5-5"></path></svg>`,
+  `<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false" stroke="currentColor" stroke-width="3" fill="none"><path d="M24 10l10 6v12l-10 6-10-6V16z"></path><circle cx="24" cy="24" r="5"></circle></svg>`,
+  `<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false" stroke="currentColor" stroke-width="3" fill="none"><rect x="14" y="14" width="20" height="20" rx="4"></rect><path d="M10 18h4M10 24h4M10 30h4M34 18h4M34 24h4M34 30h4"></path></svg>`
+];
+
+const subIcon = idx => SUB_ICONS[idx % SUB_ICONS.length];
+const componentIcon = idx => COMP_ICONS[idx % COMP_ICONS.length];
+
 /* ======= Seleção Visual ======= */
 const tilesSistemas = document.getElementById('tiles-sistemas');
 const subsBox = document.getElementById('subs');
 const compsBox = document.getElementById('comps');
 const filtroSub = document.getElementById('filtroSub');
 const filtroComp = document.getElementById('filtroComp');
+const mobileQuery = window.matchMedia('(max-width: 900px)');
+
+function goToStep(stepId){
+  if(!mobileQuery.matches) return;
+  const target = document.getElementById(stepId);
+  if(!target) return;
+  window.requestAnimationFrame(()=>{
+    const top = target.getBoundingClientRect().top + window.scrollY - 12;
+    window.scrollTo({top: Math.max(0, top), behavior:'smooth'});
+  });
+}
 
 let SYS = null;
 const SUBS = new Set();
@@ -463,6 +547,9 @@ function selectSistema(sys, tile){
   tile.classList.add('active');
   renderSubSistemas();
   renderComponentes();
+  if(SUBS.size===0){
+    setTimeout(()=>goToStep('step-subs'),80);
+  }
 }
 function renderSubSistemas(){
   subsBox.innerHTML='';
@@ -472,7 +559,7 @@ function renderSubSistemas(){
     const t = el('div',{class:'tile', tabindex:"0", role:"button", 'data-sub':sub});
     t.innerHTML = `<div class="tile-top">
                      <span class="tile-number">${idx+1}</span>
-                     <div class="icon">${sysIcon(SYS)}</div>
+                     <div class="icon">${subIcon(idx)}</div>
                    </div>
                    <div class="tile-body">
                      <div class="title">${sub}</div>
@@ -499,11 +586,14 @@ function renderSubSistemas(){
 function renderComponentes(){
   compsBox.innerHTML='';
   if(!SYS || SUBS.size===0) return;
-  SUBS.forEach(sub=>{
+  const orderedSubs = Object.keys(HIERARQUIA[SYS]||{}).filter(sub=>SUBS.has(sub));
+  let compIdx = 0;
+  orderedSubs.forEach(sub=>{
     (HIERARQUIA[SYS][sub]||[]).forEach(comp=>{
       const key = `${SYS}__${sub}__${comp}`;
       const c = el('div',{class:'comp', 'data-comp':comp, 'data-sub':sub, 'data-key':key, 'data-sys':SYS});
-      c.innerHTML = `<div class="icon">${sysIcon(SYS)}</div>
+      const iconMarkup = componentIcon(compIdx++);
+      c.innerHTML = `<div class="icon">${iconMarkup}</div>
                      <div style="flex:1"><div class="title">${comp}</div>
                      <div class="hint">${sub}</div>
                      <div class="actions">
@@ -576,6 +666,9 @@ function renderComponentes(){
     });
   });
   applyFilterComp();
+  if(compIdx>0){
+    setTimeout(()=>goToStep('step-comps'),80);
+  }
 }
 
 function setStatus(sys, sub, comp, acao, obs='', val=0, qtd=1){
@@ -675,6 +768,57 @@ filtroComp.addEventListener('input', applyFilterComp);
 
 document.getElementById('btn-pdf').addEventListener('click', ()=>window.print());
 
+const dataCard = document.getElementById('data-card');
+const vehicleSummary = document.getElementById('vehicle-summary');
+const summaryToggle = document.getElementById('vehicle-summary-toggle');
+const summaryNodes = {
+  placa: document.getElementById('sum-placa'),
+  veiculo: document.getElementById('sum-veiculo'),
+  ano: document.getElementById('sum-ano'),
+  motorista: document.getElementById('sum-motorista')
+};
+
+if(summaryToggle){
+  summaryToggle.addEventListener('click', ()=>{
+    if(!dataCard) return;
+    const isOpen = dataCard.classList.toggle('show-fields');
+    summaryToggle.setAttribute('aria-expanded', String(isOpen));
+    summaryToggle.textContent = isOpen ? 'Ocultar dados' : 'Alterar dados';
+  });
+}
+
+function renderVehicleSummary(vehicle){
+  if(!dataCard || !vehicleSummary) return;
+  if(!vehicle || !vehicle.placa){
+    vehicleSummary.hidden = true;
+    dataCard.classList.remove('has-selection','show-fields');
+    if(summaryToggle){
+      summaryToggle.setAttribute('aria-expanded','false');
+      summaryToggle.textContent = 'Alterar dados';
+    }
+    if(summaryNodes.placa){
+      summaryNodes.placa.textContent = '';
+      summaryNodes.veiculo.textContent = '';
+      summaryNodes.ano.textContent = '';
+      summaryNodes.motorista.textContent = '';
+    }
+    return;
+  }
+  dataCard.classList.remove('show-fields');
+  dataCard.classList.add('has-selection');
+  if(summaryNodes.placa){
+    summaryNodes.placa.textContent = vehicle.placa || '';
+    summaryNodes.veiculo.textContent = vehicle.veiculo || 'Veículo não informado';
+    summaryNodes.ano.textContent = [vehicle.ano, vehicle.modelo].filter(Boolean).join(' / ') || '—';
+    summaryNodes.motorista.textContent = [vehicle.motorista, vehicle.motorista2].filter(Boolean).join(' / ') || '—';
+  }
+  vehicleSummary.hidden = false;
+  if(summaryToggle){
+    summaryToggle.setAttribute('aria-expanded','false');
+    summaryToggle.textContent = 'Alterar dados';
+  }
+}
+
 function populateVehicleSelect(){
   const select = document.getElementById('f-placa');
   const base = ['<option value="">Selecione a placa</option>'];
@@ -692,6 +836,7 @@ function clearVehicleDetails(){
   const ids = ['f-veiculo','f-ano-modelo','f-motorista'];
   ids.forEach(id=>{ const input = document.getElementById(id); if(input) input.value = ''; });
   document.getElementById('hist').innerHTML = '';
+  renderVehicleSummary(null);
 }
 
 function applyVehicleDetails(vehicle){
@@ -705,6 +850,7 @@ function applyVehicleDetails(vehicle){
   const anoModelo = [vehicle.ano, vehicle.modelo].filter(Boolean).join(' / ');
   document.getElementById('f-ano-modelo').value = anoModelo;
   document.getElementById('f-motorista').value = [vehicle.motorista, vehicle.motorista2].filter(Boolean).join(' / ');
+  renderVehicleSummary(CURRENT_VEHICLE);
 }
 
 function updateVehicleHistory(placa){
