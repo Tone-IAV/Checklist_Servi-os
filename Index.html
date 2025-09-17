@@ -33,6 +33,7 @@
     border-radius:12px;padding:14px 16px;outline:none;transition:.2s;
   }
   input:focus, select:focus, textarea:focus{border-color:#93c5fd; box-shadow:0 0 0 3px #93c5fd55}
+  input[readonly]{background:#f8fafc;color:var(--muted);cursor:not-allowed}
   textarea{min-height:80px;resize:vertical}
   .btn{display:inline-flex;align-items:center;gap:8px;background:#f1f5f9;border:1px solid #dbe6f1;color:#0f172a;padding:18px 24px;border-radius:12px;cursor:pointer;font-size:1.2rem}
   .btn:hover{background:#e9eef5}
@@ -101,20 +102,19 @@
   .comp{display:flex;align-items:center;gap:14px;border:2px solid #e2e8f0;border-radius:14px;padding:18px;min-height:120px;background:#fff;cursor:pointer}
   .comp:hover{border-color:#93c5fd}
   .comp .icon{width:64px;height:64px;border-radius:10px;display:grid;place-items:center;background:#f4f7ff;border:1px solid #dbe6f1}
-  .comp .inputs{display:none;gap:8px;margin-top:6px}
-  .comp.active .inputs{display:flex;animation:fadeIn .2s ease}
+  .comp .inputs{display:none;gap:8px;margin-top:6px;flex-wrap:wrap}
+  .comp.selected .inputs{display:flex;animation:fadeIn .2s ease}
   .comp .inputs input{flex:1;border:1px solid #dbe6f1;border-radius:8px;padding:6px}
   .comp .inputs input.qtd{flex:0 0 60px}
   .comp .inputs input.val{flex:0 0 80px}
   .comp .hint{font-size:1rem;color:var(--muted)}
-  .status{display:flex;gap:8px;margin-top:6px}
-  .status-btn{font-size:2rem;flex:0 0 60px;background:#fff;border:2px solid #e2e8f0;border-radius:12px;cursor:pointer}
-  .status-btn.ok{border-color:var(--ok)}
-  .status-btn.warn{border-color:var(--warn)}
-  .status-btn.bad{border-color:var(--bad)}
-  .comp.ok{border-color:var(--ok)}
-  .comp.warn{border-color:var(--warn)}
-  .comp.bad{border-color:var(--bad)}
+  .actions{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+  .action-btn{flex:0 0 auto;background:#fff;border:2px solid #e2e8f0;border-radius:12px;padding:8px 14px;font-size:1rem;cursor:pointer;transition:.2s}
+  .action-btn:hover{border-color:var(--primary);color:var(--primary)}
+  .action-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+  .comp.selected{border-color:var(--primary)}
+  .comp.acao-reparo{border-color:var(--warn)}
+  .comp.acao-troca{border-color:var(--bad)}
   .footer-note{font-size:1rem;color:var(--muted)}
   @media (max-width:900px){
     .tiles{grid-template-columns:1fr 1fr}
@@ -158,10 +158,27 @@
       <div><label>Responsável</label><input id="f-resp" placeholder="Mecânico/Oficina"/></div>
     </div>
     <div class="grid g4" style="margin-top:8px">
-      <div><label>Cliente</label><input id="f-cliente"/></div>
-      <div><label>Telefone</label><input id="f-fone"/></div>
-      <div><label>CPF</label><input id="f-cpf"/></div>
-      <div><label>Placa</label><input id="f-placa" placeholder="AAA0A00" pattern="[A-Z]{3}[0-9][A-Z0-9][0-9]{2}"/></div>
+      <div>
+        <label>Placa</label>
+        <select id="f-placa">
+          <option value="">Selecione a placa</option>
+        </select>
+      </div>
+      <div><label>Veículo</label><input id="f-veiculo" readonly/></div>
+      <div><label>Categoria</label><input id="f-categoria" readonly/></div>
+      <div><label>Ano/Modelo</label><input id="f-ano-modelo" readonly/></div>
+    </div>
+    <div class="grid g4" style="margin-top:8px">
+      <div><label>Centro de Custo</label><input id="f-centro-custo" readonly/></div>
+      <div><label>Situação</label><input id="f-situacao" readonly/></div>
+      <div><label>Responsável (Frota)</label><input id="f-responsavel-frota" readonly/></div>
+      <div><label>Cidade / UF</label><input id="f-cidade-uf" readonly/></div>
+    </div>
+    <div class="grid g4" style="margin-top:8px">
+      <div><label>Motorista</label><input id="f-motorista" readonly/></div>
+      <div><label>Telefone</label><input id="f-telefone" readonly/></div>
+      <div><label>Km 2024</label><input id="f-km2024" readonly/></div>
+      <div><label>Km 2023</label><input id="f-km2023" readonly/></div>
     </div>
     <div id="hist" class="mini"></div>
   </div>
@@ -169,10 +186,6 @@
   <!-- ADICIONADOR VISUAL — PASSO A PASSO -->
   <div class="card">
     <h3 class="section-title">Adicionar itens (visual e em lote)</h3>
-
-    <div class="toolbar" style="justify-content:flex-end;margin-bottom:8px">
-      <button id="btn-all-ok" class="btn">Adicionar tudo normal</button>
-    </div>
 
     <!-- Passo 1: Sistemas -->
     <label>1) Escolha o <b>Sistema</b></label>
@@ -322,6 +335,9 @@ const SYS_CAT = {
 };
 
 const CHECKLIST = {};
+let VEHICLES = [];
+let CURRENT_VEHICLE = null;
+let PENDING_VEHICLE_PLATE = null;
 
 /* ======= Utils ======= */
 const fmtBRL = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
@@ -398,6 +414,9 @@ function selectSistema(sys, tile){
   }
   SYS = sys;
   SUBS.clear();
+  if(CHECKLIST[sys]){
+    Object.keys(CHECKLIST[sys]).forEach(sub=>SUBS.add(sub));
+  }
   [...tilesSistemas.children].forEach(c=>{
     c.classList.remove('active');
     if(c !== tile) c.style.display='none';
@@ -444,55 +463,136 @@ function renderComponentes(){
   if(!SYS || SUBS.size===0) return;
   SUBS.forEach(sub=>{
     (HIERARQUIA[SYS][sub]||[]).forEach(comp=>{
-      const c = el('div',{class:'comp', 'data-comp':comp, 'data-sub':sub});
+      const key = `${SYS}__${sub}__${comp}`;
+      const c = el('div',{class:'comp', 'data-comp':comp, 'data-sub':sub, 'data-key':key, 'data-sys':SYS});
       c.innerHTML = `<div class="icon">${sysIcon(SYS)}</div>
                      <div style="flex:1"><div class="title">${comp}</div>
                      <div class="hint">${sub}</div>
-                     <div class="status">
-                       <button type="button" class="status-btn ok" data-status="ok">✅</button>
-                       <button type="button" class="status-btn warn" data-status="warn">⚠️</button>
-                       <button type="button" class="status-btn bad" data-status="bad">❌</button>
-                       <button type="button" class="status-btn mic">🎤</button>
+                     <div class="actions">
+                       <button type="button" class="action-btn" data-acao="reparo">Reparo</button>
+                       <button type="button" class="action-btn" data-acao="troca">Troca</button>
+                       <button type="button" class="action-btn mic" title="Ditado por voz">🎤</button>
                      </div>
                      <div class="inputs">
-                       <input type="number" class="qtd" placeholder="Qtd" value="1">
-                       <input class="obs" placeholder="Obs">
-                       <input type="number" class="val" placeholder="Valor" value="0">
+                       <input type="number" class="qtd" placeholder="Qtd" value="1" min="0">
+                       <input class="obs" placeholder="Observações">
+                       <input type="number" class="val" placeholder="Valor" value="0" step="0.01">
                      </div>
                      </div>`;
-      const buttons = c.querySelectorAll('.status-btn');
-      buttons.forEach(b=>b.addEventListener('click', e=>{
-        const st = b.getAttribute('data-status');
-        if(st){
-          c.dataset.status = st;
-          c.classList.remove('ok','warn','bad');
-          c.classList.add(st);
-          if(st==='ok'){ c.querySelector('.inputs').style.display='none'; }
-          else{ c.querySelector('.inputs').style.display='flex'; }
-          const obs=c.querySelector('.obs').value;
-          const val=parseFloat(c.querySelector('.val').value||0);
-          setStatus(SYS, sub, comp, st, obs, val);
-          updateSuggestions();
-        }else if(b.classList.contains('mic')){
+      const buttons = c.querySelectorAll('.action-btn');
+      buttons.forEach(b=>b.addEventListener('click', ()=>{
+        if(b.classList.contains('mic')){
           startDictation(c.querySelector('.obs'));
+          return;
         }
-      }));
-      [c.querySelector('.obs'), c.querySelector('.val')].forEach(inp=>inp.addEventListener('input', ()=>{
-        const st = c.dataset.status || 'ok';
+        const acao = b.getAttribute('data-acao');
+        if(!acao) return;
+        if(c.dataset.acao === acao){
+          c.dataset.acao = '';
+          c.classList.remove('selected','acao-reparo','acao-troca');
+          buttons.forEach(btn=>btn.classList.remove('active'));
+          c.querySelector('.inputs').style.display='none';
+          setStatus(SYS, sub, comp, null);
+          return;
+        }
+        c.dataset.acao = acao;
+        buttons.forEach(btn=>btn.classList.toggle('active', btn === b));
+        c.classList.add('selected');
+        c.classList.remove('acao-reparo','acao-troca');
+        c.classList.add(`acao-${acao}`);
+        c.querySelector('.inputs').style.display='flex';
         const obs=c.querySelector('.obs').value;
         const val=parseFloat(c.querySelector('.val').value||0);
-        setStatus(SYS, sub, comp, st, obs, val);
+        const qtd=parseFloat(c.querySelector('.qtd').value||1);
+        setStatus(SYS, sub, comp, acao, obs, val, qtd);
+        updateSuggestions();
       }));
+      ['input','change'].forEach(evt=>{
+        ['.obs','.val','.qtd'].forEach(sel=>{
+          c.querySelector(sel).addEventListener(evt, ()=>{
+            if(!c.dataset.acao) return;
+            const obs=c.querySelector('.obs').value;
+            const val=parseFloat(c.querySelector('.val').value||0);
+            const qtd=parseFloat(c.querySelector('.qtd').value||1);
+            setStatus(SYS, sub, comp, c.dataset.acao, obs, val, qtd);
+          });
+        });
+      });
+      const saved = CHECKLIST[SYS]?.[sub]?.[comp];
+      if(saved && saved.acao){
+        c.dataset.acao = saved.acao;
+        c.classList.add('selected');
+        c.classList.add(`acao-${saved.acao}`);
+        const inputs = c.querySelector('.inputs');
+        inputs.style.display='flex';
+        c.querySelector('.qtd').value = saved.qtd ?? 1;
+        c.querySelector('.obs').value = saved.obs || '';
+        c.querySelector('.val').value = saved.val ?? 0;
+        buttons.forEach(btn=>{
+          const ac = btn.getAttribute('data-acao');
+          if(!ac) return;
+          btn.classList.toggle('active', ac===saved.acao);
+        });
+      }
       compsBox.appendChild(c);
     });
   });
   applyFilterComp();
 }
 
-function setStatus(sys, sub, comp, status, obs='', val=0){
+function setStatus(sys, sub, comp, acao, obs='', val=0, qtd=1){
+  if(!acao){
+    if(CHECKLIST[sys] && CHECKLIST[sys][sub]){
+      delete CHECKLIST[sys][sub][comp];
+      if(Object.keys(CHECKLIST[sys][sub]).length===0) delete CHECKLIST[sys][sub];
+      if(Object.keys(CHECKLIST[sys]).length===0) delete CHECKLIST[sys];
+    }
+    return;
+  }
   if(!CHECKLIST[sys]) CHECKLIST[sys] = {};
   if(!CHECKLIST[sys][sub]) CHECKLIST[sys][sub] = {};
-  CHECKLIST[sys][sub][comp] = {status, obs, val};
+  const entry = {
+    acao,
+    obs: obs || '',
+    val: Number(val)||0,
+    qtd: Number(qtd)||0
+  };
+  if(!isFinite(entry.val)) entry.val = 0;
+  if(!isFinite(entry.qtd) || entry.qtd<=0) entry.qtd = 1;
+  CHECKLIST[sys][sub][comp] = entry;
+}
+
+function sanitizeChecklist(){
+  for(const sys in CHECKLIST){
+    for(const sub in CHECKLIST[sys]){
+      for(const comp in CHECKLIST[sys][sub]){
+        const entry = CHECKLIST[sys][sub][comp];
+        if(!entry){
+          delete CHECKLIST[sys][sub][comp];
+          continue;
+        }
+        if(!entry.acao && entry.status){
+          if(entry.status === 'bad') entry.acao = 'troca';
+          else if(entry.status === 'warn') entry.acao = 'reparo';
+        }
+        if(!entry.acao){
+          delete CHECKLIST[sys][sub][comp];
+          continue;
+        }
+        entry.obs = entry.obs || '';
+        entry.val = Number(entry.val)||0;
+        if(!isFinite(entry.val)) entry.val = 0;
+        entry.qtd = Number(entry.qtd)||0;
+        if(!isFinite(entry.qtd) || entry.qtd<=0) entry.qtd = 1;
+      }
+      if(!Object.keys(CHECKLIST[sys][sub]).length){
+        delete CHECKLIST[sys][sub];
+      }
+    }
+    if(!Object.keys(CHECKLIST[sys]||{}).length){
+      delete CHECKLIST[sys];
+    }
+  }
 }
 
 function startDictation(input){
@@ -509,7 +609,7 @@ function updateSuggestions(){
   const freios = CHECKLIST['Freios'];
   if(freios){
     Object.values(freios).forEach(obj=>{
-      Object.values(obj).forEach(it=>{ if(it.status==='bad') sug.push('Revisar pneus e rodas'); });
+      Object.values(obj).forEach(it=>{ if(it.acao==='troca' || it.acao==='reparo') sug.push('Revisar pneus e rodas'); });
     });
   }
   const list=document.getElementById('sug-list');
@@ -535,32 +635,105 @@ function applyFilterComp(){
 filtroSub.addEventListener('input', applyFilterSub);
 filtroComp.addEventListener('input', applyFilterComp);
 
-document.getElementById('btn-all-ok').addEventListener('click', ()=>{
-  Object.keys(HIERARQUIA).forEach(sys=>{
-    Object.entries(HIERARQUIA[sys]).forEach(([sub, comps])=>{
-      comps.forEach(comp=>setStatus(sys, sub, comp, 'ok'));
-    });
-  });
-  alert('Todos os itens marcados como Ok');
-});
-
-function autoFillCliente(){
-  const placa = document.getElementById('f-placa').value.trim();
-  const cpf = document.getElementById('f-cpf').value.trim();
-  const q = placa || cpf;
-  if(!q) return;
-  google.script.run.withSuccessHandler(res=>{
-    if(res && res.cliente){
-      document.getElementById('f-cliente').value = res.cliente.nome || '';
-      document.getElementById('f-fone').value = res.cliente.fone || '';
-      document.getElementById('hist').innerHTML = (res.historico||[]).map(h=>`<div>OS ${h.meta.os} - ${h.meta.status||''}</div>`).join('');
-    }
-  }).findCliente(q);
-}
-document.getElementById('f-placa').addEventListener('blur', autoFillCliente);
-document.getElementById('f-cpf').addEventListener('blur', autoFillCliente);
-
 document.getElementById('btn-pdf').addEventListener('click', ()=>window.print());
+
+function populateVehicleSelect(){
+  const select = document.getElementById('f-placa');
+  const base = ['<option value="">Selecione a placa</option>'];
+  const sorted = [...VEHICLES].sort((a,b)=>String(a.placa||'').localeCompare(String(b.placa||''), 'pt-BR', {numeric:true}));
+  sorted.forEach(v=>{
+    const placa = String(v.placa||'').toUpperCase();
+    const label = v.veiculo ? `${placa} - ${v.veiculo}` : placa;
+    base.push(`<option value="${placa}">${label}</option>`);
+  });
+  select.innerHTML = base.join('');
+}
+
+function clearVehicleDetails(){
+  CURRENT_VEHICLE = null;
+  const ids = ['f-veiculo','f-categoria','f-ano-modelo','f-centro-custo','f-situacao','f-responsavel-frota','f-cidade-uf','f-motorista','f-telefone','f-km2024','f-km2023'];
+  ids.forEach(id=>{ const input = document.getElementById(id); if(input) input.value = ''; });
+  document.getElementById('hist').innerHTML = '';
+}
+
+function applyVehicleDetails(vehicle){
+  if(!vehicle){
+    clearVehicleDetails();
+    return;
+  }
+  const placa = String(vehicle.placa||'').toUpperCase();
+  CURRENT_VEHICLE = {...vehicle, placa};
+  document.getElementById('f-veiculo').value = vehicle.veiculo || '';
+  document.getElementById('f-categoria').value = vehicle.categoria || '';
+  const anoModelo = [vehicle.ano, vehicle.modelo].filter(Boolean).join(' / ');
+  document.getElementById('f-ano-modelo').value = anoModelo;
+  document.getElementById('f-centro-custo').value = vehicle.centroCusto || '';
+  document.getElementById('f-situacao').value = vehicle.situacaoAtual || vehicle.situacao || '';
+  document.getElementById('f-responsavel-frota').value = vehicle.responsavel || '';
+  const cidadeUf = [vehicle.cidade, vehicle.uf].filter(Boolean).join(' / ');
+  document.getElementById('f-cidade-uf').value = cidadeUf;
+  document.getElementById('f-motorista').value = [vehicle.motorista, vehicle.motorista2].filter(Boolean).join(' / ');
+  document.getElementById('f-telefone').value = [vehicle.telefone, vehicle.telefone2].filter(Boolean).join(' / ');
+  document.getElementById('f-km2024').value = vehicle.km2024 || '';
+  document.getElementById('f-km2023').value = vehicle.km2023 || '';
+}
+
+function updateVehicleHistory(placa){
+  if(!placa){
+    document.getElementById('hist').innerHTML = '';
+    return;
+  }
+  google.script.run
+    .withSuccessHandler(res=>{
+      const historico = res?.historico || [];
+      if(!historico.length){
+        document.getElementById('hist').innerHTML = 'Sem OS anteriores para esta placa.';
+        return;
+      }
+      const html = historico.map(h=>`<div>OS ${h.meta?.os||''} - ${(h.meta?.status||'').toUpperCase()}</div>`).join('');
+      document.getElementById('hist').innerHTML = html;
+    })
+    .withFailureHandler(()=>{ document.getElementById('hist').innerHTML = ''; })
+    .getVehicleHistory(placa);
+}
+
+function handleVehicleChange(){
+  const select = document.getElementById('f-placa');
+  const placa = String(select.value||'').toUpperCase();
+  if(!placa){
+    clearVehicleDetails();
+    return;
+  }
+  let vehicle = VEHICLES.find(v=>String(v.placa||'').toUpperCase() === placa);
+  if(!vehicle && CURRENT_VEHICLE && CURRENT_VEHICLE.placa === placa){
+    vehicle = CURRENT_VEHICLE;
+  }
+  if(vehicle){
+    applyVehicleDetails(vehicle);
+  } else {
+    applyVehicleDetails({placa});
+  }
+  updateVehicleHistory(placa);
+}
+
+function loadVehicles(){
+  google.script.run
+    .withSuccessHandler(list=>{
+      VEHICLES = Array.isArray(list) ? list.map(v=>({ ...v, placa: String(v.placa||'').toUpperCase() })) : [];
+      populateVehicleSelect();
+      if(PENDING_VEHICLE_PLATE){
+        document.getElementById('f-placa').value = PENDING_VEHICLE_PLATE;
+        handleVehicleChange();
+        PENDING_VEHICLE_PLATE = null;
+      }
+    })
+    .withFailureHandler(err=>{
+      console.error('Erro ao carregar veículos', err);
+    })
+    .getVehicles();
+}
+
+document.getElementById('f-placa').addEventListener('change', handleVehicleChange);
 
 google.script.run.withSuccessHandler(d=>{
   document.getElementById('d-abertas').textContent = d.abertas;
@@ -639,21 +812,21 @@ document.getElementById('btn-add').addEventListener('click', ()=>{ itemsEl.appen
 
 /* ======= Adição em lote ======= */
 document.getElementById('btn-add-batch').addEventListener('click', ()=>{
-  const ativos = [...compsBox.querySelectorAll('.comp')].filter(c=>c.dataset.status && c.dataset.status!=='ok');
+  const ativos = [...compsBox.querySelectorAll('.comp')].filter(c=>c.dataset.acao);
   if(!ativos.length) return;
   ativos.forEach(c=>{
+    const sys = c.getAttribute('data-sys') || SYS;
     const sub = c.getAttribute('data-sub');
     const comp = c.getAttribute('data-comp');
-    const tipo = 'Peça';
+    const acao = c.dataset.acao || 'troca';
+    const tipo = acao==='troca' ? 'Peça' : 'Serviço';
+    const serv = acao==='troca' ? 'Troca/Substituição' : 'Reparo/Recondicionamento';
     const desc = c.querySelector('.obs').value;
     const qtd  = parseFloat(c.querySelector('.qtd').value || '1');
     const preco= parseFloat(c.querySelector('.val').value || '0');
-    const un   = 'UN';
-    const base = { sistema:SYS, sub, comp, tipo, serv:(tipo==='Peça')?'Troca/Substituição':'Teste funcional', desc, qtd, un, preco };
+    const un   = acao==='troca' ? 'UN' : 'H';
+    const base = { sistema:sys, sub, comp, tipo, serv, desc, qtd, un, preco };
     itemsEl.appendChild(createItemRow(base));
-    c.dataset.status='ok';
-    c.classList.remove('warn','bad');
-    c.querySelector('.inputs').style.display='none';
   });
   updateTotals();
   document.getElementById('itemsCard').style.display='block';
@@ -699,9 +872,12 @@ fileHier.addEventListener('change', e=>{
   e.target.value='';
 });
 function buildPayload(){
+  const placa = String(document.getElementById('f-placa').value||'').toUpperCase();
+  const veiculo = CURRENT_VEHICLE ? {...CURRENT_VEHICLE} : {};
+  if(placa) veiculo.placa = placa;
   return {
     meta:{ os:document.getElementById('f-os').value, entrada:document.getElementById('f-data-entrada').value, entrega:document.getElementById('f-data-entrega').value, resp:document.getElementById('f-resp').value, status:document.getElementById('osStatus').textContent },
-    cliente:{ nome:document.getElementById('f-cliente').value, fone:document.getElementById('f-fone').value, cpf:document.getElementById('f-cpf').value, placa:document.getElementById('f-placa').value },
+    veiculo,
     checklist: CHECKLIST,
     itens:getRows(),
     totais:{ pecas:document.getElementById('t-pecas').textContent, serv:document.getElementById('t-serv').textContent, acresc:Number(document.getElementById('t-acresc').value||0), geral:document.getElementById('t-geral').textContent }
@@ -722,10 +898,22 @@ function applyData(data){
   document.getElementById('f-data-entrada').value = data?.meta?.entrada || '';
   document.getElementById('f-data-entrega').value = data?.meta?.entrega || '';
   document.getElementById('f-resp').value = data?.meta?.resp || '';
-  document.getElementById('f-cliente').value = data?.cliente?.nome || '';
-  document.getElementById('f-fone').value = data?.cliente?.fone || '';
-  document.getElementById('f-cpf').value = data?.cliente?.cpf || '';
-  document.getElementById('f-placa').value = data?.cliente?.placa || '';
+  const veiculoData = data?.veiculo || {};
+  const placa = veiculoData?.placa ? String(veiculoData.placa).toUpperCase() : '';
+  CURRENT_VEHICLE = placa ? {...veiculoData, placa} : null;
+  if(placa){
+    document.getElementById('f-placa').value = placa;
+    if(VEHICLES.length){
+      handleVehicleChange();
+    }else{
+      applyVehicleDetails(CURRENT_VEHICLE);
+      updateVehicleHistory(placa);
+      PENDING_VEHICLE_PLATE = placa;
+    }
+  }else{
+    document.getElementById('f-placa').value = '';
+    clearVehicleDetails();
+  }
   document.getElementById('osNumber').textContent = data?.meta?.os || '';
   document.getElementById('osDate').textContent = data?.meta?.entrada || '';
   document.getElementById('osStatus').textContent = data?.meta?.status || 'Aberta';
@@ -735,6 +923,7 @@ function applyData(data){
   document.getElementById('t-acresc').value = data?.totais?.acresc ?? 0;
   Object.keys(CHECKLIST).forEach(k=>delete CHECKLIST[k]);
   Object.assign(CHECKLIST, data?.checklist || {});
+  sanitizeChecklist();
   updateTotals();
   updateSuggestions();
 }
@@ -758,11 +947,9 @@ function startNewOS(){
   document.getElementById('f-data-entrada').value = '';
   document.getElementById('f-data-entrega').value = '';
   document.getElementById('f-resp').value = '';
-  document.getElementById('f-cliente').value = '';
-  document.getElementById('f-fone').value = '';
-  document.getElementById('f-cpf').value = '';
   document.getElementById('f-placa').value = '';
-  document.getElementById('hist').innerHTML = '';
+  PENDING_VEHICLE_PLATE = null;
+  clearVehicleDetails();
   itemsEl.innerHTML = '';
   document.getElementById('itemsCard').style.display = 'none';
   document.getElementById('t-acresc').value = 0;
@@ -777,6 +964,7 @@ document.getElementById('btn-new').addEventListener('click', ()=>{
 
 /* start */
 renderSistemas();
+loadVehicles();
 startNewOS();
 </script>
 </body>
