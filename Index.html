@@ -23,6 +23,23 @@
   .mini{font-size:1rem;color:var(--muted)}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
   .card.compact{padding:12px}
+  .card.focus-card{border:2px solid rgba(37,99,235,.35);box-shadow:0 18px 42px rgba(37,99,235,.08)}
+  .highlight-callout{display:flex;gap:10px;align-items:flex-start;background:linear-gradient(135deg,rgba(37,99,235,.14),rgba(96,165,250,.12));border:1px solid rgba(37,99,235,.18);border-radius:18px;padding:12px 16px;margin:0 0 16px 0}
+  .highlight-callout strong{display:block;font-size:1.1rem;font-weight:800;color:var(--primary)}
+  .highlight-callout span{color:var(--muted);font-size:1rem}
+  #data-card.has-selection .highlight-callout{display:none}
+  .priority-box{border:2px dashed rgba(37,99,235,.35);background:rgba(37,99,235,.06);border-radius:18px;padding:14px}
+  .priority-box label{color:var(--primary)}
+  .vehicle-office.priority-box{margin-bottom:16px}
+  .plate-field.priority-box{display:flex;flex-direction:column;gap:10px}
+  .plate-autocomplete{position:relative;display:flex;flex-direction:column;gap:6px}
+  .plate-autocomplete__list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:16px;padding:6px 0;margin-top:6px;box-shadow:0 22px 45px rgba(15,23,42,.2);max-height:260px;overflow:auto;z-index:30}
+  .plate-autocomplete__list[hidden]{display:none}
+  .plate-autocomplete__item{width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px 16px;background:none;border:none;text-align:left;font-size:1.05rem;font-weight:600;color:var(--text);cursor:pointer}
+  .plate-autocomplete__item:hover,.plate-autocomplete__item:focus{background:rgba(37,99,235,.08);outline:none}
+  .plate-autocomplete__item small{font-size:.9rem;font-weight:500;color:var(--muted)}
+  .plate-autocomplete__match{font-weight:800;font-size:1.1rem}
+  .plate-autocomplete mark{background:rgba(37,99,235,.2);color:var(--primary);padding:0 2px;border-radius:4px}
   #data-card{position:relative}
   .vehicle-summary{display:none;flex-direction:column;gap:10px;margin-bottom:14px}
   .vehicle-summary__main{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -214,6 +231,8 @@
     .card{border:none;border-radius:0;padding:14px 0;margin-bottom:10px}
     .step{padding:14px 12px}
     .vehicle-summary__meta div{font-size:.9rem}
+    .highlight-callout{flex-direction:column;gap:6px}
+    .priority-box{padding:12px}
   }
   @media print{ .btn, .toolbar, .list-panel, .tiles, .row-actions, .search{display:none !important} }
 </style>
@@ -221,8 +240,14 @@
 <body>
 <div class="wrap">
   <!-- DADOS BÁSICOS -->
-  <div class="card" id="data-card">
+  <div class="card focus-card" id="data-card">
     <h3 class="section-title">Dados</h3>
+    <div class="highlight-callout" role="status">
+      <div>
+        <strong>Comece por aqui</strong>
+        <span>Informe a oficina responsável e digite a placa do veículo para carregar os dados automaticamente.</span>
+      </div>
+    </div>
     <input type="hidden" id="f-os" />
     <div id="vehicle-summary" class="vehicle-summary" hidden>
       <div class="vehicle-summary__main">
@@ -235,7 +260,7 @@
       </div>
       <button type="button" id="vehicle-summary-toggle" class="vehicle-summary__toggle" aria-expanded="false">Alterar dados</button>
     </div>
-    <div class="vehicle-office" id="vehicle-office">
+    <div class="vehicle-office priority-box" id="vehicle-office">
       <label>Oficina</label>
       <input id="f-resp" placeholder="Nome da oficina"/>
     </div>
@@ -244,11 +269,13 @@
         <div><label>Entrada</label><input id="f-data-entrada" readonly/></div>
       </div>
       <div class="grid g4 vehicle-fields__row">
-        <div>
+        <div class="plate-field priority-box">
           <label>Placa</label>
-          <select id="f-placa">
-            <option value="">Selecione a placa</option>
-          </select>
+          <div class="plate-autocomplete">
+            <input id="f-placa" placeholder="Digite a placa" autocomplete="off" spellcheck="false" list="f-placa-list"/>
+            <datalist id="f-placa-list"></datalist>
+            <div id="plate-suggestions" class="plate-autocomplete__list" hidden></div>
+          </div>
         </div>
         <div><label>Veículo</label><input id="f-veiculo" readonly/></div>
         <div><label>Ano/Modelo</label><input id="f-ano-modelo" readonly/></div>
@@ -454,11 +481,49 @@ let VEHICLES = [];
 let CURRENT_VEHICLE = null;
 let PENDING_VEHICLE_PLATE = null;
 let CURRENT_STATUS = 'Aberta';
+let LAST_HISTORY_PLATE = '';
 
 /* ======= Utils ======= */
 const fmtBRL = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
 const toNumber = el => { const n = parseFloat(String(el?.value||"").replace(",",".")); return isFinite(n)?n:0; };
 function el(tag, attrs={}, ...children){ const e=document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>{ if(k==='class')e.className=v; else if(k==='html')e.innerHTML=v; else e.setAttribute(k,v); }); children.forEach(c=>e.append(c)); return e; }
+function escapeHtml(str){
+  const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'};
+  map["'"] = '&#39;';
+  return String(str||'').replace(/[&<>"']/g, ch=>map[ch] || ch);
+}
+const normalizePlate = value => String(value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+function highlightPlateMatch(plate, query){
+  const original = String(plate||'').toUpperCase();
+  const normalizedPlate = normalizePlate(original);
+  const normalizedQuery = normalizePlate(query);
+  if(!normalizedQuery) return escapeHtml(original);
+  const start = normalizedPlate.indexOf(normalizedQuery);
+  if(start === -1) return escapeHtml(original);
+  const end = start + normalizedQuery.length;
+  let result = '';
+  let cursor = 0;
+  let markOpen = false;
+  for(const char of original){
+    const isAlphaNum = /[A-Z0-9]/.test(char);
+    if(isAlphaNum && cursor === start && !markOpen){
+      result += '<mark>';
+      markOpen = true;
+    }
+    if(isAlphaNum && cursor === end && markOpen){
+      result += '</mark>';
+      markOpen = false;
+    }
+    result += escapeHtml(char);
+    if(isAlphaNum){
+      cursor++;
+    }
+  }
+  if(markOpen){
+    result += '</mark>';
+  }
+  return result;
+}
 
 /* ======= Entrada automática ======= */
 function setEntrada(isoValue='', displayValue=''){
@@ -987,15 +1052,69 @@ function renderVehicleSummary(vehicle){
 }
 
 function populateVehicleSelect(){
-  const select = document.getElementById('f-placa');
-  const base = ['<option value="">Selecione a placa</option>'];
+  const datalist = document.getElementById('f-placa-list');
+  if(!datalist) return;
   const sorted = [...VEHICLES].sort((a,b)=>String(a.placa||'').localeCompare(String(b.placa||''), 'pt-BR', {numeric:true}));
-  sorted.forEach(v=>{
+  const options = sorted.map(v=>{
     const placa = String(v.placa||'').toUpperCase();
     const label = v.veiculo ? `${placa} - ${v.veiculo}` : placa;
-    base.push(`<option value="${placa}">${label}</option>`);
+    return `<option value="${escapeHtml(placa)}" label="${escapeHtml(label)}"></option>`;
   });
-  select.innerHTML = base.join('');
+  datalist.innerHTML = options.join('');
+}
+
+function filterVehiclesByPlate(query){
+  const normalized = normalizePlate(query);
+  if(!normalized) return [];
+  return VEHICLES.filter(v=>normalizePlate(v.placa).includes(normalized));
+}
+
+function clearPlateSuggestions(){
+  const list = document.getElementById('plate-suggestions');
+  if(list){
+    list.innerHTML = '';
+    list.hidden = true;
+  }
+}
+
+function renderPlateSuggestions(matches, query){
+  const list = document.getElementById('plate-suggestions');
+  if(!list) return;
+  const normalized = normalizePlate(query);
+  if(!normalized || !matches.length){
+    clearPlateSuggestions();
+    return;
+  }
+  const html = matches.slice(0,6).map(v=>{
+    const placa = String(v.placa||'').toUpperCase();
+    const matchHtml = `<span class="plate-autocomplete__match">${highlightPlateMatch(placa, normalized)}</span>`;
+    const vehicleInfo = v.veiculo ? `<small>${escapeHtml(v.veiculo)}</small>` : '';
+    return `<button type="button" class="plate-autocomplete__item" data-placa="${escapeHtml(placa)}">${matchHtml}${vehicleInfo}</button>`;
+  }).join('');
+  list.innerHTML = html;
+  list.hidden = false;
+}
+
+function handlePlateInput(){
+  const input = document.getElementById('f-placa');
+  if(!input) return;
+  const rawValue = String(input.value||'').toUpperCase();
+  input.value = rawValue;
+  if(!rawValue){
+    clearVehicleDetails();
+    clearPlateSuggestions();
+    return;
+  }
+  const matches = filterVehiclesByPlate(rawValue);
+  renderPlateSuggestions(matches, rawValue);
+  const normalized = normalizePlate(rawValue);
+  const exact = matches.find(v=>normalizePlate(v.placa) === normalized);
+  if(exact){
+    applyVehicleDetails(exact);
+    updateVehicleHistory(exact.placa);
+  } else {
+    clearVehicleDetails();
+  }
 }
 
 function clearVehicleDetails(){
@@ -1003,6 +1122,7 @@ function clearVehicleDetails(){
   const ids = ['f-veiculo','f-ano-modelo','f-motorista'];
   ids.forEach(id=>{ const input = document.getElementById(id); if(input) input.value = ''; });
   document.getElementById('hist').innerHTML = '';
+  LAST_HISTORY_PLATE = '';
   renderVehicleSummary(null);
 }
 
@@ -1020,48 +1140,75 @@ function applyVehicleDetails(vehicle){
   renderVehicleSummary(CURRENT_VEHICLE);
 }
 
-function updateVehicleHistory(placa){
-  if(!placa){
-    document.getElementById('hist').innerHTML = '';
+function updateVehicleHistory(placa, force=false){
+  const histEl = document.getElementById('hist');
+  const normalized = normalizePlate(placa);
+  if(!normalized){
+    if(histEl) histEl.innerHTML = '';
+    LAST_HISTORY_PLATE = '';
     return;
   }
+  if(!force && LAST_HISTORY_PLATE === normalized){
+    return;
+  }
+  LAST_HISTORY_PLATE = normalized;
   google.script.run
     .withSuccessHandler(res=>{
       const historico = res?.historico || [];
       if(!historico.length){
-        document.getElementById('hist').innerHTML = 'Sem OS anteriores para esta placa.';
+        if(histEl) histEl.innerHTML = 'Sem OS anteriores para esta placa.';
         return;
       }
       const html = historico.map(h=>`<div>OS ${h.meta?.os||''} - ${(h.meta?.status||'').toUpperCase()}</div>`).join('');
-      document.getElementById('hist').innerHTML = html;
+      if(histEl) histEl.innerHTML = html;
     })
-    .withFailureHandler(()=>{ document.getElementById('hist').innerHTML = ''; })
+    .withFailureHandler(()=>{ if(histEl) histEl.innerHTML = ''; LAST_HISTORY_PLATE = ''; })
     .getVehicleHistory(placa);
 }
 
-function handleVehicleChange(){
-  const select = document.getElementById('f-placa');
-  const placa = String(select.value||'').toUpperCase();
-  if(!placa){
+function handleVehicleChange(value){
+  const input = document.getElementById('f-placa');
+  const rawValue = typeof value === 'string' ? value : (input?.value || '');
+  const upperValue = String(rawValue||'').toUpperCase();
+  if(input && typeof value === 'string'){
+    input.value = upperValue;
+  }
+  const normalized = normalizePlate(upperValue);
+  const shouldLookup = normalized.length >= 3;
+  if(!normalized){
+    if(input) input.value = '';
     clearVehicleDetails();
+    clearPlateSuggestions();
     return;
   }
-  let vehicle = VEHICLES.find(v=>String(v.placa||'').toUpperCase() === placa);
-  if(!vehicle && CURRENT_VEHICLE && CURRENT_VEHICLE.placa === placa){
+  let vehicle = VEHICLES.find(v=>normalizePlate(v.placa) === normalized);
+  if(!vehicle && CURRENT_VEHICLE && normalizePlate(CURRENT_VEHICLE.placa) === normalized){
     vehicle = CURRENT_VEHICLE;
   }
   if(vehicle){
+    if(input) input.value = String(vehicle.placa||'').toUpperCase();
     applyVehicleDetails(vehicle);
+    if(shouldLookup){
+      updateVehicleHistory(vehicle.placa);
+    } else {
+      updateVehicleHistory('');
+    }
   } else {
-    applyVehicleDetails({placa});
+    if(input) input.value = upperValue;
+    applyVehicleDetails({placa: upperValue});
+    if(shouldLookup){
+      updateVehicleHistory(upperValue);
+    } else {
+      updateVehicleHistory('');
+    }
   }
-  updateVehicleHistory(placa);
+  clearPlateSuggestions();
 }
 
 function loadVehicles(){
   google.script.run
     .withSuccessHandler(list=>{
-      VEHICLES = Array.isArray(list) ? list.map(v=>({ ...v, placa: String(v.placa||'').toUpperCase() })) : [];
+      VEHICLES = Array.isArray(list) ? list.map(v=>({ ...v, placa: String(v.placa||'').toUpperCase().replace(/\s+/g,'') })) : [];
       populateVehicleSelect();
       if(PENDING_VEHICLE_PLATE){
         document.getElementById('f-placa').value = PENDING_VEHICLE_PLATE;
@@ -1075,7 +1222,27 @@ function loadVehicles(){
     .getVehicles();
 }
 
-document.getElementById('f-placa').addEventListener('change', handleVehicleChange);
+const plateInput = document.getElementById('f-placa');
+if(plateInput){
+  plateInput.addEventListener('input', handlePlateInput);
+  plateInput.addEventListener('change', ()=>handleVehicleChange());
+}
+const plateSuggestionsEl = document.getElementById('plate-suggestions');
+if(plateSuggestionsEl){
+  plateSuggestionsEl.addEventListener('mousedown', e=>e.preventDefault());
+  plateSuggestionsEl.addEventListener('click', e=>{
+    const option = e.target.closest('.plate-autocomplete__item');
+    if(!option) return;
+    handleVehicleChange(option.dataset.placa || '');
+    if(plateInput){
+      plateInput.focus();
+      if(typeof plateInput.setSelectionRange === 'function'){
+        const len = plateInput.value.length;
+        plateInput.setSelectionRange(len, len);
+      }
+    }
+  });
+}
 
 /* ======= Itens (linhas) ======= */
 const itemsEl = document.getElementById('items');
