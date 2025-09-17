@@ -76,9 +76,10 @@
   }
   .tile .icon{
     position:relative;z-index:1;width:72px;height:72px;border-radius:20px;display:grid;place-items:center;font-size:2rem;
-    background:rgba(37,99,235,.1);color:var(--accent);
+    background:rgba(37,99,235,.08);color:var(--accent);overflow:hidden;
   }
-  .tile .icon svg{width:36px;height:36px}
+  .tile .icon img{width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(15,23,42,.15));}
+  .tile .icon span{font-weight:700;font-size:1.4rem;}
   .tile-body{position:relative;z-index:1;display:flex;flex-direction:column;gap:8px;width:100%;flex:1}
   .tile .title{font-weight:700;font-size:1.05rem}
   .tile .hint{font-size:.95rem;color:var(--muted)}
@@ -131,31 +132,13 @@
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <span class="badge">Ordem de Serviço</span>
-    <h1>OS <span id="osNumber"></span></h1>
-    <span class="pill" id="osStatus">Aberta</span>
-    <span class="mini">Criada em <span id="osDate"></span></span>
-    <button class="btn ghost" id="btn-new" style="margin-left:auto">Nova OS</button>
-  </header>
-
-  <div class="card" id="dashCard">
-    <h3 class="section-title">Dashboard</h3>
-    <div class="totals">
-      <div class="kpi"><div class="k">Abertas</div><div class="v" id="d-abertas">0</div></div>
-      <div class="kpi"><div class="k">Aguardando Peça</div><div class="v" id="d-aguardando">0</div></div>
-      <div class="kpi"><div class="k">Concluídas</div><div class="v" id="d-concluidas">0</div></div>
-    </div>
-  </div>
-
   <!-- DADOS BÁSICOS -->
   <div class="card">
     <h3 class="section-title">Dados</h3>
-    <div class="grid g4">
-      <div><label>Nº OS</label><input id="f-os" placeholder="(auto)"/></div>
-      <div><label>Entrada</label><input type="date" id="f-data-entrada"/></div>
-      <div><label>Entrega (prev.)</label><input type="date" id="f-data-entrega"/></div>
-      <div><label>Responsável</label><input id="f-resp" placeholder="Mecânico/Oficina"/></div>
+    <input type="hidden" id="f-os" />
+    <div class="grid g2">
+      <div><label>Entrada</label><input id="f-data-entrada" readonly/></div>
+      <div><label>Oficina</label><input id="f-resp" placeholder="Nome da oficina"/></div>
     </div>
     <div class="grid g4" style="margin-top:8px">
       <div>
@@ -165,20 +148,8 @@
         </select>
       </div>
       <div><label>Veículo</label><input id="f-veiculo" readonly/></div>
-      <div><label>Categoria</label><input id="f-categoria" readonly/></div>
       <div><label>Ano/Modelo</label><input id="f-ano-modelo" readonly/></div>
-    </div>
-    <div class="grid g4" style="margin-top:8px">
-      <div><label>Centro de Custo</label><input id="f-centro-custo" readonly/></div>
-      <div><label>Situação</label><input id="f-situacao" readonly/></div>
-      <div><label>Responsável (Frota)</label><input id="f-responsavel-frota" readonly/></div>
-      <div><label>Cidade / UF</label><input id="f-cidade-uf" readonly/></div>
-    </div>
-    <div class="grid g4" style="margin-top:8px">
       <div><label>Motorista</label><input id="f-motorista" readonly/></div>
-      <div><label>Telefone</label><input id="f-telefone" readonly/></div>
-      <div><label>Km 2024</label><input id="f-km2024" readonly/></div>
-      <div><label>Km 2023</label><input id="f-km2023" readonly/></div>
     </div>
     <div id="hist" class="mini"></div>
   </div>
@@ -338,40 +309,57 @@ const CHECKLIST = {};
 let VEHICLES = [];
 let CURRENT_VEHICLE = null;
 let PENDING_VEHICLE_PLATE = null;
+let CURRENT_STATUS = 'Aberta';
 
 /* ======= Utils ======= */
 const fmtBRL = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
 const toNumber = el => { const n = parseFloat(String(el?.value||"").replace(",",".")); return isFinite(n)?n:0; };
 function el(tag, attrs={}, ...children){ const e=document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>{ if(k==='class')e.className=v; else if(k==='html')e.innerHTML=v; else e.setAttribute(k,v); }); children.forEach(c=>e.append(c)); return e; }
 
-/* ======= Header auto ======= */
-(function initHeader(){
+/* ======= Entrada automática ======= */
+function setEntrada(isoValue='', displayValue=''){
+  const input = document.getElementById('f-data-entrada');
+  if(!input) return;
+  let iso = isoValue || '';
+  let display = displayValue || '';
+  if(!display && iso){
+    const parsed = new Date(iso);
+    display = isNaN(parsed) ? iso : parsed.toLocaleString('pt-BR');
+  }
+  if(!iso && display){
+    const parsed = new Date(display);
+    iso = isNaN(parsed) ? display : parsed.toISOString();
+  }
+  input.value = display;
+  input.dataset.iso = iso || display || '';
+}
+function setEntradaNow(){
   const now = new Date();
-  document.getElementById('osDate').textContent = now.toLocaleString('pt-BR');
-  const osId = '#' + now.getFullYear().toString().slice(2) + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + '-' + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0');
-  document.getElementById('osNumber').textContent = osId;
-  document.getElementById('f-os').value = osId.replace('#','');
-  document.getElementById('f-data-entrada').valueAsDate = new Date();
-})();
+  setEntrada(now.toISOString(), now.toLocaleString('pt-BR'));
+}
 
-/* ======= Ícones simples (SVG inline) por Sistema ======= */
+/* ======= Ícones com imagens por Sistema ======= */
+const SYS_ICON_LINKS = {
+  "Motor":"https://cdn-icons-png.flaticon.com/128/2061/2061956.png",
+  "Transmissão/Tração":"https://cdn-icons-png.flaticon.com/128/2783/2783760.png",
+  "Direção":"https://cdn-icons-png.flaticon.com/128/4869/4869033.png",
+  "Suspensão":"https://cdn-icons-png.flaticon.com/128/4539/4539880.png",
+  "Freios":"https://cdn-icons-png.flaticon.com/128/662/662877.png",
+  "Pneus & Rodas":"https://cdn-icons-png.flaticon.com/128/1768/1768143.png",
+  "Elétrica/Eletrônica":"https://cdn-icons-png.flaticon.com/128/649/649797.png",
+  "Ar-Condicionado/Climatização":"https://cdn-icons-png.flaticon.com/128/18208/18208239.png",
+  "Carroceria & Fechaduras":"https://cdn-icons-png.flaticon.com/128/6246/6246180.png",
+  "Segurança & Itens obrigatórios":"https://cdn-icons-png.flaticon.com/128/1039/1039155.png",
+  "Diagnóstico & Testes":"https://cdn-icons-png.flaticon.com/128/2631/2631398.png"
+};
 function sysIcon(name){
-  const base = 'style="width:26px;height:26px"';
-  const map = {
-    "Motor": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M3 9h6l2-2h4l3 3v6H3V9Z" stroke="#2563eb" stroke-width="1.5"/><path d="M14 7v3m-8 6h14" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Transmissão/Tração": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="8" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/><circle cx="16" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/><path d="M11 12h2" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Direção": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#2563eb" stroke-width="1.5"/><path d="M12 7v5l4 2" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Suspensão": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M6 7l12 10M6 17L18 7" stroke="#2563eb" stroke-width="1.5"/><rect x="4" y="5" width="4" height="4" stroke="#2563eb" stroke-width="1.5"/><rect x="16" y="15" width="4" height="4" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Freios": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="7" stroke="#2563eb" stroke-width="1.5"/><path d="M12 5a7 7 0 017 7h-5a2 2 0 00-2-2V5Z" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Pneus & Rodas": `<svg ${base} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#2563eb" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Elétrica/Eletrônica": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h7l-1 8 11-12h-7l1-8Z" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Ar-Condicionado/Climatização": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M12 2v20M4 6l16 12M4 18L20 6" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Carroceria & Fechaduras": `<svg ${base} viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="10" rx="2" stroke="#2563eb" stroke-width="1.5"/><path d="M7 8l3-3h4l3 3" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Segurança & Itens obrigatórios": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4v5c0 4.418-3.582 8-8 8s-8-3.582-8-8V7l8-4Z" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Documentação & Acessórios": `<svg ${base} viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2" stroke="#2563eb" stroke-width="1.5"/><path d="M8 7h8M8 11h8" stroke="#2563eb" stroke-width="1.5"/></svg>`,
-    "Diagnóstico & Testes": `<svg ${base} viewBox="0 0 24 24" fill="none"><path d="M4 16l4-8 4 8 4-6 4 6" stroke="#2563eb" stroke-width="1.5"/><rect x="3" y="3" width="18" height="4" rx="1" stroke="#2563eb" stroke-width="1.5"/></svg>`
-  };
-  return map[name] || `<svg ${base}></svg>`;
+  const url = SYS_ICON_LINKS[name];
+  if(url){
+    const safeAlt = (name || '').replace(/"/g,'&quot;');
+    return `<img src="${url}" alt="${safeAlt}" loading="lazy"/>`;
+  }
+  const letter = String(name||'').trim().charAt(0) || '?';
+  return `<span>${letter}</span>`;
 }
 
 /* ======= Seleção Visual ======= */
@@ -651,7 +639,7 @@ function populateVehicleSelect(){
 
 function clearVehicleDetails(){
   CURRENT_VEHICLE = null;
-  const ids = ['f-veiculo','f-categoria','f-ano-modelo','f-centro-custo','f-situacao','f-responsavel-frota','f-cidade-uf','f-motorista','f-telefone','f-km2024','f-km2023'];
+  const ids = ['f-veiculo','f-ano-modelo','f-motorista'];
   ids.forEach(id=>{ const input = document.getElementById(id); if(input) input.value = ''; });
   document.getElementById('hist').innerHTML = '';
 }
@@ -664,18 +652,9 @@ function applyVehicleDetails(vehicle){
   const placa = String(vehicle.placa||'').toUpperCase();
   CURRENT_VEHICLE = {...vehicle, placa};
   document.getElementById('f-veiculo').value = vehicle.veiculo || '';
-  document.getElementById('f-categoria').value = vehicle.categoria || '';
   const anoModelo = [vehicle.ano, vehicle.modelo].filter(Boolean).join(' / ');
   document.getElementById('f-ano-modelo').value = anoModelo;
-  document.getElementById('f-centro-custo').value = vehicle.centroCusto || '';
-  document.getElementById('f-situacao').value = vehicle.situacaoAtual || vehicle.situacao || '';
-  document.getElementById('f-responsavel-frota').value = vehicle.responsavel || '';
-  const cidadeUf = [vehicle.cidade, vehicle.uf].filter(Boolean).join(' / ');
-  document.getElementById('f-cidade-uf').value = cidadeUf;
   document.getElementById('f-motorista').value = [vehicle.motorista, vehicle.motorista2].filter(Boolean).join(' / ');
-  document.getElementById('f-telefone').value = [vehicle.telefone, vehicle.telefone2].filter(Boolean).join(' / ');
-  document.getElementById('f-km2024').value = vehicle.km2024 || '';
-  document.getElementById('f-km2023').value = vehicle.km2023 || '';
 }
 
 function updateVehicleHistory(placa){
@@ -734,12 +713,6 @@ function loadVehicles(){
 }
 
 document.getElementById('f-placa').addEventListener('change', handleVehicleChange);
-
-google.script.run.withSuccessHandler(d=>{
-  document.getElementById('d-abertas').textContent = d.abertas;
-  document.getElementById('d-aguardando').textContent = d.aguardando;
-  document.getElementById('d-concluidas').textContent = d.concluidas;
-}).getDashboard();
 
 /* ======= Itens (linhas) ======= */
 const itemsEl = document.getElementById('items');
@@ -875,8 +848,19 @@ function buildPayload(){
   const placa = String(document.getElementById('f-placa').value||'').toUpperCase();
   const veiculo = CURRENT_VEHICLE ? {...CURRENT_VEHICLE} : {};
   if(placa) veiculo.placa = placa;
+  const entradaEl = document.getElementById('f-data-entrada');
+  const entradaIso = entradaEl?.dataset?.iso || '';
+  const entradaDisplay = entradaEl?.value || '';
+  const oficina = document.getElementById('f-resp').value || '';
   return {
-    meta:{ os:document.getElementById('f-os').value, entrada:document.getElementById('f-data-entrada').value, entrega:document.getElementById('f-data-entrega').value, resp:document.getElementById('f-resp').value, status:document.getElementById('osStatus').textContent },
+    meta:{
+      os: document.getElementById('f-os').value,
+      entrada: entradaIso || entradaDisplay,
+      entradaDisplay,
+      oficina,
+      resp: oficina,
+      status: CURRENT_STATUS
+    },
     veiculo,
     checklist: CHECKLIST,
     itens:getRows(),
@@ -895,9 +879,11 @@ document.getElementById('btn-finalizar').addEventListener('click', ()=>saveCheck
 
 function applyData(data){
   document.getElementById('f-os').value = data?.meta?.os || '';
-  document.getElementById('f-data-entrada').value = data?.meta?.entrada || '';
-  document.getElementById('f-data-entrega').value = data?.meta?.entrega || '';
-  document.getElementById('f-resp').value = data?.meta?.resp || '';
+  const entradaRaw = data?.meta?.entrada || '';
+  const entradaDisplay = data?.meta?.entradaDisplay || data?.meta?.entradaFmt || '';
+  setEntrada(entradaRaw, entradaDisplay);
+  document.getElementById('f-resp').value = data?.meta?.oficina ?? data?.meta?.resp ?? '';
+  CURRENT_STATUS = data?.meta?.status || 'Aberta';
   const veiculoData = data?.veiculo || {};
   const placa = veiculoData?.placa ? String(veiculoData.placa).toUpperCase() : '';
   CURRENT_VEHICLE = placa ? {...veiculoData, placa} : null;
@@ -914,9 +900,6 @@ function applyData(data){
     document.getElementById('f-placa').value = '';
     clearVehicleDetails();
   }
-  document.getElementById('osNumber').textContent = data?.meta?.os || '';
-  document.getElementById('osDate').textContent = data?.meta?.entrada || '';
-  document.getElementById('osStatus').textContent = data?.meta?.status || 'Aberta';
   itemsEl.innerHTML = '';
   (data?.itens||[]).forEach(it => itemsEl.appendChild(createItemRow(it)));
   document.getElementById('itemsCard').style.display = (data?.itens?.length) ? 'block' : 'none';
@@ -940,12 +923,9 @@ document.getElementById('btn-load').addEventListener('click', ()=>{
 function startNewOS(){
   google.script.run.withSuccessHandler(num=>{
     document.getElementById('f-os').value = num;
-    document.getElementById('osNumber').textContent = num;
   }).getNextOS();
-  document.getElementById('osDate').textContent = new Date().toLocaleDateString('pt-BR');
-  document.getElementById('osStatus').textContent = 'Aberta';
-  document.getElementById('f-data-entrada').value = '';
-  document.getElementById('f-data-entrega').value = '';
+  setEntradaNow();
+  CURRENT_STATUS = 'Aberta';
   document.getElementById('f-resp').value = '';
   document.getElementById('f-placa').value = '';
   PENDING_VEHICLE_PLATE = null;
@@ -957,10 +937,6 @@ function startNewOS(){
   updateTotals();
   updateSuggestions();
 }
-
-document.getElementById('btn-new').addEventListener('click', ()=>{
-  if(confirm('Iniciar nova OS? Dados não salvos serão perdidos.')) startNewOS();
-});
 
 /* start */
 renderSistemas();
