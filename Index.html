@@ -22,25 +22,44 @@
   .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:1rem}
   .mini{font-size:1rem;color:var(--muted)}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
-  .section-title{margin:0 0 10px 0;font-weight:700}
+  .section-title{margin:0 0 10px 0;font-weight:700;font-size:1.4rem}
   .grid{display:grid;gap:10px}
   .g2{grid-template-columns: repeat(2, minmax(0,1fr))}
   .g3{grid-template-columns: repeat(3, minmax(0,1fr))}
   .g4{grid-template-columns: repeat(4, minmax(0,1fr))}
-  label{font-size:1rem;color:var(--muted);display:block;margin-bottom:6px}
+  label{font-size:1.1rem;color:var(--text);display:block;margin-bottom:6px;font-weight:600}
   input, select, textarea{
     width:100%;background:#fff;border:1px solid #dbe6f1;color:var(--text);
-    border-radius:12px;padding:14px 16px;outline:none;transition:.2s;
+    border-radius:12px;padding:14px 16px;outline:none;transition:.2s;font-size:1.1rem;
   }
+  input::placeholder, textarea::placeholder{color:#94a3b8;font-size:1rem}
   input:focus, select:focus, textarea:focus{border-color:#93c5fd; box-shadow:0 0 0 3px #93c5fd55}
   input[readonly]{background:#f8fafc;color:var(--muted);cursor:not-allowed}
   textarea{min-height:80px;resize:vertical}
-  .btn{display:inline-flex;align-items:center;gap:8px;background:#f1f5f9;border:1px solid #dbe6f1;color:#0f172a;padding:18px 24px;border-radius:12px;cursor:pointer;font-size:1.2rem}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:#f1f5f9;border:1px solid #dbe6f1;color:#0f172a;padding:18px 24px;border-radius:12px;cursor:pointer;font-size:1.2rem;font-weight:700}
   .btn:hover{background:#e9eef5}
   .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-color:transparent}
   .btn.ghost{background:#fff}
-  .toolbar{display:flex;flex-wrap:wrap;gap:8px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start}
   .divider{height:1px;background:var(--line);margin:12px 0}
+  .step{
+    display:flex;align-items:flex-start;gap:18px;padding:18px 20px;margin-bottom:20px;
+    background:linear-gradient(135deg,#f8fbff,#eef3ff);border-radius:22px;border:1px solid #dbe6f1;
+  }
+  .step-number{
+    width:64px;height:64px;border-radius:20px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--primary),var(--primary-2));
+    color:#fff;font-weight:800;font-size:1.6rem;box-shadow:0 14px 28px rgba(37,99,235,.22);
+  }
+  .step-body{flex:1;display:flex;flex-direction:column;gap:12px}
+  .step-title{font-size:1.5rem;font-weight:800}
+  .step-desc{font-size:1.1rem;color:var(--muted)}
+  .step-area{display:flex;flex-direction:column;gap:16px;width:100%}
+  .step-area .tiles{margin:0}
+  .step-area .list-panel{margin:0}
+  .step-actions{display:flex;flex-wrap:wrap;gap:12px}
+  .field-group{display:flex;flex-direction:column;gap:10px}
+  .field-group label{margin-bottom:0}
   .items-head, .item-row{display:grid;grid-template-columns:1.1fr 1.1fr 1.2fr 0.8fr 1.1fr 1.3fr 0.7fr 0.8fr 1fr 0.6fr;gap:8px}
   .items-head{font-size:1rem;color:var(--muted);margin-bottom:6px}
   .item-row{margin-bottom:8px}
@@ -50,11 +69,11 @@
   .kpi .k{font-size:1rem;color:var(--muted)}
   .kpi .v{font-weight:700}
   /* --------- Seleção Visual (cards) --------- */
-  .tiles{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .tiles{display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
   .tile{
     --accent:var(--primary);
     position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:18px;cursor:pointer;
-    background:linear-gradient(145deg,#ffffff,#f3f7fb);padding:22px;border-radius:22px;min-height:190px;
+    background:linear-gradient(145deg,#ffffff,#f3f7fb);padding:24px;border-radius:24px;min-height:210px;
     box-shadow:0 18px 40px rgba(15,23,42,.08);border:none;transition:transform .2s ease, box-shadow .2s ease;
     overflow:hidden;
   }
@@ -71,8 +90,8 @@
   @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
   .tile-top{width:100%;display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
   .tile-number{
-    display:inline-flex;align-items:center;justify-content:center;padding:6px 12px;border-radius:14px;font-weight:700;
-    font-size:1rem;color:#fff;background:var(--accent);box-shadow:0 8px 20px rgba(15,23,42,.15);
+    display:inline-flex;align-items:center;justify-content:center;padding:8px 16px;border-radius:16px;font-weight:800;
+    font-size:1.2rem;color:#fff;background:var(--accent);box-shadow:0 8px 20px rgba(15,23,42,.15);
   }
   .tile .icon{
     position:relative;z-index:1;width:72px;height:72px;border-radius:20px;display:grid;place-items:center;font-size:2rem;
@@ -81,10 +100,10 @@
   .tile .icon img{width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(15,23,42,.15));}
   .tile .icon span{font-weight:700;font-size:1.4rem;}
   .tile-body{position:relative;z-index:1;display:flex;flex-direction:column;gap:8px;width:100%;flex:1}
-  .tile .title{font-weight:700;font-size:1.05rem}
-  .tile .hint{font-size:.95rem;color:var(--muted)}
+  .tile .title{font-weight:800;font-size:1.25rem}
+  .tile .hint{font-size:1.05rem;color:var(--muted)}
   .tile .sub-inputs{display:none;margin-top:8px;width:100%}
-  .tile .sub-inputs input{width:100%;border:1px solid #dbe6f1;border-radius:12px;padding:10px 12px;font-size:1rem}
+  .tile .sub-inputs input{width:100%;border:1px solid #dbe6f1;border-radius:12px;padding:10px 12px;font-size:1.05rem}
   .tile.cat-mech{--accent:var(--mech)}
   .tile.cat-safe{--accent:var(--safe)}
   .tile.cat-comfort{--accent:var(--comfort)}
@@ -98,19 +117,19 @@
   .row-actions{display:flex;gap:8px;flex-wrap:wrap}
   .search{display:flex;gap:8px;align-items:center}
   .search input{flex:1}
-  .list-panel{border:1px dashed #cbd5e1;border-radius:12px;padding:10px;background:#fbfeff;max-height:none;overflow:visible}
+  .list-panel{border:1px dashed #cbd5e1;border-radius:18px;padding:16px;background:#fbfeff;max-height:none;overflow:visible}
   .comp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-  .comp{display:flex;align-items:center;gap:14px;border:2px solid #e2e8f0;border-radius:14px;padding:18px;min-height:120px;background:#fff;cursor:pointer}
+  .comp{display:flex;align-items:center;gap:14px;border:2px solid #e2e8f0;border-radius:18px;padding:20px;min-height:130px;background:#fff;cursor:pointer;font-size:1.05rem}
   .comp:hover{border-color:#93c5fd}
   .comp .icon{width:64px;height:64px;border-radius:10px;display:grid;place-items:center;background:#f4f7ff;border:1px solid #dbe6f1}
   .comp .inputs{display:none;gap:8px;margin-top:6px;flex-wrap:wrap}
   .comp.selected .inputs{display:flex;animation:fadeIn .2s ease}
-  .comp .inputs input{flex:1;border:1px solid #dbe6f1;border-radius:8px;padding:6px}
+  .comp .inputs input{flex:1;border:1px solid #dbe6f1;border-radius:8px;padding:8px;font-size:1.05rem}
   .comp .inputs input.qtd{flex:0 0 60px}
   .comp .inputs input.val{flex:0 0 80px}
-  .comp .hint{font-size:1rem;color:var(--muted)}
+  .comp .hint{font-size:1.05rem;color:var(--muted)}
   .actions{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
-  .action-btn{flex:0 0 auto;background:#fff;border:2px solid #e2e8f0;border-radius:12px;padding:8px 14px;font-size:1rem;cursor:pointer;transition:.2s}
+  .action-btn{flex:0 0 auto;background:#fff;border:2px solid #e2e8f0;border-radius:14px;padding:10px 18px;font-size:1.05rem;cursor:pointer;transition:.2s;font-weight:600}
   .action-btn:hover{border-color:var(--primary);color:var(--primary)}
   .action-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
   .comp.selected{border-color:var(--primary)}
@@ -121,11 +140,14 @@
     .tiles{grid-template-columns:1fr 1fr}
     .comp-grid{grid-template-columns:1fr}
     .items-head, .item-row{grid-template-columns:1fr 1fr 1fr 0.9fr 1.2fr 1fr 0.7fr 0.9fr 1fr 0.6fr}
+    .step{flex-direction:column}
+    .step-number{width:72px;height:72px}
   }
   @media (max-width:600px){
     .tiles{grid-template-columns:1fr}
     .wrap{padding:8px}
     .card{border:none;border-radius:0;padding:14px 0;margin-bottom:10px}
+    .step{padding:16px 14px}
   }
   @media print{ .btn, .toolbar, .list-panel, .tiles, .row-actions, .search{display:none !important} }
 </style>
@@ -159,44 +181,72 @@
     <h3 class="section-title">Adicionar itens (visual e em lote)</h3>
 
     <!-- Passo 1: Sistemas -->
-    <label>1) Escolha o <b>Sistema</b></label>
-    <div id="tiles-sistemas" class="tiles" aria-label="Sistemas"></div>
-    <div class="row-actions">
-      <button id="btn-export-hier" class="btn">Exportar Sistemas</button>
-      <button id="btn-import-hier" class="btn">Importar Sistemas</button>
-      <input type="file" id="file-hier" accept="application/json" style="display:none" />
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-body">
+        <div class="step-title">Escolha o Sistema</div>
+        <div class="step-desc">Toque em um cartão para selecionar o sistema principal do veículo.</div>
+        <div class="step-area">
+          <div id="tiles-sistemas" class="tiles" aria-label="Sistemas"></div>
+          <div class="row-actions step-actions">
+            <button id="btn-export-hier" class="btn">Exportar Sistemas</button>
+            <button id="btn-import-hier" class="btn">Importar Sistemas</button>
+            <input type="file" id="file-hier" accept="application/json" style="display:none" />
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Passo 2: SubSistemas -->
-    <div class="divider"></div>
-    <div class="row-actions">
-      <div class="search" style="flex:1">
-        <label style="margin:0;color:var(--muted)">2) Selecione SubSistema</label>
-        <input id="filtroSub" placeholder="Buscar SubSistemas…" />
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-body">
+        <div class="step-title">Escolha o SubSistema</div>
+        <div class="step-desc">Pesquise pelo nome ou role a lista e toque para marcar os SubSistemas necessários.</div>
+        <div class="step-area">
+          <div class="field-group">
+            <label for="filtroSub">Buscar SubSistema</label>
+            <input id="filtroSub" placeholder="Buscar SubSistemas…" />
+          </div>
+          <div id="panel-subs" class="list-panel">
+            <div id="subs" class="tiles"></div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div id="panel-subs" class="list-panel">
-      <div id="subs" class="tiles"></div>
     </div>
 
     <!-- Passo 3: Componentes -->
-    <div class="divider"></div>
-    <div class="row-actions">
-      <div class="search" style="flex:1">
-        <label style="margin:0;color:var(--muted)">3) Selecione Componente</label>
-        <input id="filtroComp" placeholder="Buscar Componentes… (ex.: pastilha, correia)" />
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-body">
+        <div class="step-title">Escolha o Componente</div>
+        <div class="step-desc">Role a lista ou utilize a busca para localizar o componente correto.</div>
+        <div class="step-area">
+          <div class="field-group">
+            <label for="filtroComp">Buscar Componente</label>
+            <input id="filtroComp" placeholder="Buscar Componentes… (ex.: pastilha, correia)" />
+          </div>
+          <div id="panel-comps" class="list-panel">
+            <div id="comps" class="comp-grid"></div>
+          </div>
+        </div>
       </div>
     </div>
-    <div id="panel-comps" class="list-panel">
-      <div id="comps" class="comp-grid"></div>
-    </div>
 
-    <!-- Opções & Prévia -->
-    <div class="divider"></div>
-    <div class="toolbar" style="justify-content:flex-end">
-      <button class="btn" id="btn-pdf">Exportar PDF</button>
-      <button class="btn" id="btn-finalizar">Finalizar checklist</button>
-      <button class="btn primary" id="btn-add-batch">Adicionar itens</button>
+    <!-- Passo 4: Finalização -->
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-body">
+        <div class="step-title">Finalize o Checklist</div>
+        <div class="step-desc">Revise os itens selecionados e gere os relatórios necessários.</div>
+        <div class="step-area">
+          <div class="toolbar">
+            <button class="btn" id="btn-pdf">Exportar PDF</button>
+            <button class="btn" id="btn-finalizar">Finalizar checklist</button>
+            <button class="btn primary" id="btn-add-batch">Adicionar itens</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
