@@ -39,9 +39,15 @@
   #data-card.has-selection #vehicle-summary{display:flex}
   #data-card.has-selection .vehicle-summary__toggle{display:inline-flex}
   #data-card.has-selection .vehicle-chip{animation:fadeIn .25s ease}
+  .vehicle-office{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+  .vehicle-office label{margin-bottom:0;font-weight:700}
   .vehicle-fields{display:flex;flex-direction:column;gap:10px}
+  .vehicle-fields__row{margin-bottom:8px}
+  .vehicle-fields__row:last-child{margin-bottom:0}
   #data-card.show-fields .vehicle-summary__toggle::after{content:'\2191'}
   #data-card.show-fields .vehicle-summary__toggle{color:var(--muted)}
+  #data-card.has-selection:not(.show-fields) .vehicle-fields{display:none}
+  #data-card.has-selection:not(.show-fields) .vehicle-summary__toggle::after{content:'\2193'}
   .section-title{margin:0 0 10px 0;font-weight:700;font-size:1.4rem}
   .grid{display:grid;gap:10px}
   .g2{grid-template-columns: repeat(2, minmax(0,1fr))}
@@ -60,6 +66,8 @@
   .btn:hover{background:#e9eef5}
   .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-color:transparent}
   .btn.ghost{background:#fff}
+  .btn:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
+  .btn:disabled:hover{background:#f1f5f9;color:#0f172a}
   .toolbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start}
   .divider{height:1px;background:var(--line);margin:12px 0}
   .step{
@@ -142,8 +150,8 @@
   .row-actions{display:flex;gap:8px;flex-wrap:wrap}
   .search{display:flex;gap:8px;align-items:center}
   .search input{flex:1}
-  .list-panel{border:1px dashed #cbd5e1;border-radius:18px;padding:16px;background:#fbfeff;max-height:min(70vh,560px);overflow:auto;-webkit-overflow-scrolling:touch}
-  #panel-comps{max-height:min(75vh,620px)}
+  .list-panel{border:1px dashed #cbd5e1;border-radius:18px;padding:16px;background:#fbfeff;overflow:auto;-webkit-overflow-scrolling:touch}
+  #panel-comps{overflow:auto}
   .comp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .comp{display:flex;align-items:flex-start;gap:16px;border:2px solid #e2e8f0;border-radius:22px;padding:20px 22px;min-height:140px;background:#fff;cursor:pointer;font-size:1.05rem;transition:border-color .2s ease, box-shadow .2s ease;touch-action:manipulation;}
   .comp:hover{border-color:#93c5fd;box-shadow:0 12px 26px rgba(15,23,42,.12)}
@@ -165,6 +173,21 @@
   .comp.acao-reparo .icon{color:var(--warn)}
   .comp.acao-troca .icon{color:var(--bad)}
   .footer-note{font-size:1rem;color:var(--muted)}
+  .step.hidden{display:none}
+  .current-system{position:sticky;top:12px;z-index:10;display:flex;flex-wrap:wrap;align-items:center;gap:16px;background:rgba(241,245,249,.92);border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin-bottom:18px;backdrop-filter:blur(6px);--indicator-accent:var(--primary)}
+  .current-system[data-cat="mech"]{--indicator-accent:var(--mech)}
+  .current-system[data-cat="safe"]{--indicator-accent:var(--safe)}
+  .current-system[data-cat="comfort"]{--indicator-accent:var(--comfort)}
+  .current-system::before{content:"";position:absolute;inset:0;border-radius:inherit;border:2px solid var(--indicator-accent);opacity:.18;pointer-events:none}
+  .current-system__icon{width:82px;height:82px;border-radius:22px;display:grid;place-items:center;background:rgba(37,99,235,.12);color:var(--indicator-accent);font-size:2.2rem;position:relative;overflow:hidden}
+  .current-system[data-cat="mech"] .current-system__icon{background:rgba(59,130,246,.12)}
+  .current-system[data-cat="safe"] .current-system__icon{background:rgba(249,115,22,.12)}
+  .current-system[data-cat="comfort"] .current-system__icon{background:rgba(22,163,74,.12)}
+  .current-system__icon img{width:58px;height:58px;object-fit:contain}
+  .current-system__info{display:flex;flex-direction:column;gap:4px;min-width:180px}
+  .current-system__label{text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  .current-system__name{font-size:1.4rem;font-weight:800;color:var(--text)}
+  .current-system__actions{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto}
   @media (max-width:900px){
     .wrap{padding:12px}
     .tiles{grid-template-columns:1fr}
@@ -184,8 +207,6 @@
     .comp .inputs input{flex:1;width:100%}
     .list-panel{padding:14px}
     .action-btn{flex:1;justify-content:center}
-    #data-card.has-selection:not(.show-fields) .vehicle-fields{display:none}
-    #data-card.has-selection:not(.show-fields) .vehicle-summary__toggle::after{content:'\2193'}
   }
   @media (max-width:600px){
     .tiles{grid-template-columns:1fr}
@@ -214,12 +235,15 @@
       </div>
       <button type="button" id="vehicle-summary-toggle" class="vehicle-summary__toggle" aria-expanded="false">Alterar dados</button>
     </div>
+    <div class="vehicle-office" id="vehicle-office">
+      <label>Oficina</label>
+      <input id="f-resp" placeholder="Nome da oficina"/>
+    </div>
     <div class="vehicle-fields" id="vehicle-fields">
-      <div class="grid g2">
+      <div class="vehicle-fields__row">
         <div><label>Entrada</label><input id="f-data-entrada" readonly/></div>
-        <div><label>Oficina</label><input id="f-resp" placeholder="Nome da oficina"/></div>
       </div>
-      <div class="grid g4" style="margin-top:8px">
+      <div class="grid g4 vehicle-fields__row">
         <div>
           <label>Placa</label>
           <select id="f-placa">
@@ -252,6 +276,18 @@
             <input type="file" id="file-hier" accept="application/json" style="display:none" />
           </div>
         </div>
+      </div>
+    </div>
+
+    <div id="current-system" class="current-system" hidden>
+      <div class="current-system__icon" id="current-system-icon"></div>
+      <div class="current-system__info">
+        <div class="current-system__label">Sistema selecionado</div>
+        <div class="current-system__name" id="current-system-name"></div>
+      </div>
+      <div class="current-system__actions">
+        <button type="button" class="btn primary" id="btn-save-system">Salvar seleção</button>
+        <button type="button" class="btn ghost" id="btn-exit-system">Sair</button>
       </div>
     </div>
 
@@ -492,6 +528,120 @@ const compsBox = document.getElementById('comps');
 const filtroSub = document.getElementById('filtroSub');
 const filtroComp = document.getElementById('filtroComp');
 const mobileQuery = window.matchMedia('(max-width: 900px)');
+const stepSistemas = document.getElementById('step-sistemas');
+const stepSubs = document.getElementById('step-subs');
+const stepComps = document.getElementById('step-comps');
+const stepFinal = document.getElementById('step-final');
+const currentSystemBanner = document.getElementById('current-system');
+const currentSystemIcon = document.getElementById('current-system-icon');
+const currentSystemName = document.getElementById('current-system-name');
+const btnSaveSystem = document.getElementById('btn-save-system');
+const btnExitSystem = document.getElementById('btn-exit-system');
+
+let initialSystemState = null;
+let initialSystemKey = null;
+let hasUnsavedChanges = false;
+
+function countSelectedComponents(sys){
+  if(!sys) return 0;
+  const data = CHECKLIST[sys];
+  if(!data) return 0;
+  let total = 0;
+  Object.values(data).forEach(subMap=>{
+    if(!subMap) return;
+    total += Object.keys(subMap).length;
+  });
+  return total;
+}
+
+function hasAnyChecklistItems(){
+  return Object.values(CHECKLIST).some(subMap=>{
+    if(!subMap) return false;
+    return Object.values(subMap).some(compMap=>compMap && Object.keys(compMap).length>0);
+  });
+}
+
+function snapshotSystemState(sys){
+  const data = CHECKLIST[sys];
+  return data ? JSON.parse(JSON.stringify(data)) : null;
+}
+
+function updateCurrentSystemIndicator(sys){
+  if(!currentSystemBanner) return;
+  if(!sys){
+    currentSystemBanner.hidden = true;
+    delete currentSystemBanner.dataset.cat;
+    if(currentSystemIcon) currentSystemIcon.innerHTML = '';
+    if(currentSystemName) currentSystemName.textContent = '';
+    return;
+  }
+  const cat = SYS_CAT[sys] || 'mech';
+  currentSystemBanner.dataset.cat = cat;
+  currentSystemBanner.hidden = false;
+  if(currentSystemIcon) currentSystemIcon.innerHTML = sysIcon(sys);
+  if(currentSystemName) currentSystemName.textContent = sys;
+}
+
+function updateStepFlow(){
+  const hasSystem = Boolean(SYS);
+  if(stepSistemas) stepSistemas.classList.toggle('hidden', hasSystem);
+  if(stepSubs) stepSubs.classList.toggle('hidden', !hasSystem);
+  if(stepComps) stepComps.classList.toggle('hidden', !hasSystem || SUBS.size===0);
+  if(stepFinal) stepFinal.classList.toggle('hidden', hasSystem || !hasAnyChecklistItems());
+  if(currentSystemBanner) currentSystemBanner.hidden = !hasSystem;
+  const canSave = hasSystem && SUBS.size>0 && countSelectedComponents(SYS)>0;
+  if(btnSaveSystem) btnSaveSystem.disabled = !canSave;
+}
+
+function resetSystemSelection(){
+  [...tilesSistemas.children].forEach(c=>{
+    c.classList.remove('active');
+    c.style.display='';
+  });
+  SYS = null;
+  SUBS.clear();
+  initialSystemKey = null;
+  initialSystemState = null;
+  hasUnsavedChanges = false;
+  updateCurrentSystemIndicator(null);
+  renderSubSistemas();
+  renderComponentes();
+  updateStepFlow();
+}
+
+function saveCurrentSystem(){
+  if(!SYS) return;
+  if(SUBS.size===0){
+    alert('Selecione pelo menos um SubSistema antes de salvar.');
+    return;
+  }
+  if(countSelectedComponents(SYS)===0){
+    alert('Selecione pelo menos um componente e defina uma ação antes de salvar.');
+    return;
+  }
+  alert(`Seleção do sistema "${SYS}" salva.`);
+  resetSystemSelection();
+}
+
+function exitCurrentSystem(){
+  if(!SYS) return;
+  const message = hasUnsavedChanges
+    ? 'As seleções feitas para este sistema serão perdidas se você sair agora. Deseja continuar?'
+    : 'Deseja sair da seleção deste sistema?';
+  if(!confirm(message)) return;
+  if(hasUnsavedChanges && initialSystemKey === SYS){
+    if(initialSystemState){
+      CHECKLIST[SYS] = JSON.parse(JSON.stringify(initialSystemState));
+    } else {
+      delete CHECKLIST[SYS];
+    }
+  }
+  updateSuggestions();
+  resetSystemSelection();
+}
+
+if(btnSaveSystem) btnSaveSystem.addEventListener('click', saveCurrentSystem);
+if(btnExitSystem) btnExitSystem.addEventListener('click', exitCurrentSystem);
 
 function goToStep(stepId){
   if(!mobileQuery.matches) return;
@@ -525,15 +675,11 @@ function renderSistemas(){
 }
 function selectSistema(sys, tile){
   if(SYS === sys){
-    if(confirm('Tem certeza que deseja desmarcar o item e subitens?')){
-      SYS = null;
-      SUBS.clear();
-      [...tilesSistemas.children].forEach(c=>{ c.classList.remove('active'); c.style.display=''; });
-      renderSubSistemas();
-      renderComponentes();
-    }
+    exitCurrentSystem();
     return;
   }
+  initialSystemKey = sys;
+  initialSystemState = snapshotSystemState(sys);
   SYS = sys;
   SUBS.clear();
   if(CHECKLIST[sys]){
@@ -545,15 +691,21 @@ function selectSistema(sys, tile){
   });
   tile.style.display='';
   tile.classList.add('active');
+  hasUnsavedChanges = false;
+  updateCurrentSystemIndicator(sys);
   renderSubSistemas();
   renderComponentes();
   if(SUBS.size===0){
     setTimeout(()=>goToStep('step-subs'),80);
   }
+  updateStepFlow();
 }
 function renderSubSistemas(){
   subsBox.innerHTML='';
-  if(!SYS) return;
+  if(!SYS){
+    updateStepFlow();
+    return;
+  }
   const subs = Object.keys(HIERARQUIA[SYS]);
   subs.forEach((sub, idx)=>{
     const t = el('div',{class:'tile', tabindex:"0", role:"button", 'data-sub':sub});
@@ -571,21 +723,31 @@ function renderSubSistemas(){
       if(SUBS.has(sub)){
         SUBS.delete(sub);
         t.classList.remove('active');
+        if(CHECKLIST[SYS] && CHECKLIST[SYS][sub]){
+          delete CHECKLIST[SYS][sub];
+          if(!Object.keys(CHECKLIST[SYS]).length) delete CHECKLIST[SYS];
+        }
       }else{
         SUBS.add(sub);
         t.classList.add('active');
       }
+      hasUnsavedChanges = true;
       renderComponentes();
+      updateStepFlow();
     }
     t.addEventListener('click', e=>{ if(e.target.closest('.sub-inputs')) return; toggle(); });
     t.addEventListener('keypress', e=>{ if(e.key==='Enter'||e.key===' ') toggle(); });
     subsBox.appendChild(t);
   });
+  updateStepFlow();
   applyFilterSub();
 }
 function renderComponentes(){
   compsBox.innerHTML='';
-  if(!SYS || SUBS.size===0) return;
+  if(!SYS || SUBS.size===0){
+    updateStepFlow();
+    return;
+  }
   const orderedSubs = Object.keys(HIERARQUIA[SYS]||{}).filter(sub=>SUBS.has(sub));
   let compIdx = 0;
   orderedSubs.forEach(sub=>{
@@ -666,6 +828,7 @@ function renderComponentes(){
     });
   });
   applyFilterComp();
+  updateStepFlow();
   if(compIdx>0){
     setTimeout(()=>goToStep('step-comps'),80);
   }
@@ -678,6 +841,8 @@ function setStatus(sys, sub, comp, acao, obs='', val=0, qtd=1){
       if(Object.keys(CHECKLIST[sys][sub]).length===0) delete CHECKLIST[sys][sub];
       if(Object.keys(CHECKLIST[sys]).length===0) delete CHECKLIST[sys];
     }
+    hasUnsavedChanges = true;
+    updateStepFlow();
     return;
   }
   if(!CHECKLIST[sys]) CHECKLIST[sys] = {};
@@ -691,6 +856,8 @@ function setStatus(sys, sub, comp, acao, obs='', val=0, qtd=1){
   if(!isFinite(entry.val)) entry.val = 0;
   if(!isFinite(entry.qtd) || entry.qtd<=0) entry.qtd = 1;
   CHECKLIST[sys][sub][comp] = entry;
+  hasUnsavedChanges = true;
+  updateStepFlow();
 }
 
 function sanitizeChecklist(){
@@ -1117,6 +1284,7 @@ document.getElementById('btn-load').addEventListener('click', ()=>{
 });
 
 function startNewOS(){
+  resetSystemSelection();
   google.script.run.withSuccessHandler(num=>{
     document.getElementById('f-os').value = num;
   }).getNextOS();
@@ -1132,10 +1300,12 @@ function startNewOS(){
   Object.keys(CHECKLIST).forEach(k=>delete CHECKLIST[k]);
   updateTotals();
   updateSuggestions();
+  updateStepFlow();
 }
 
 /* start */
 renderSistemas();
+updateStepFlow();
 loadVehicles();
 startNewOS();
 </script>
