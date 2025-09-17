@@ -79,6 +79,14 @@
   input:focus, select:focus, textarea:focus{border-color:#93c5fd; box-shadow:0 0 0 3px #93c5fd55}
   input[readonly]{background:#f8fafc;color:var(--muted);cursor:not-allowed}
   textarea{min-height:80px;resize:vertical}
+  .input-field{display:flex;flex-direction:column;gap:6px}
+  .input-field .input-label{font-size:.95rem;font-weight:600;color:var(--muted)}
+  .input-field .input-hint{font-size:.85rem;color:var(--muted)}
+  .currency-input{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dbe6f1;border-radius:12px;padding:0 14px}
+  .currency-input span{font-weight:700;color:var(--primary);font-size:1.05rem}
+  .currency-input input{border:none;background:transparent;padding:14px 0;font-size:1.1rem;width:100%}
+  .currency-input input:focus{box-shadow:none}
+  .currency-input:focus-within{border-color:#93c5fd;box-shadow:0 0 0 3px #93c5fd55}
   .btn{display:inline-flex;align-items:center;gap:8px;background:#f1f5f9;border:1px solid #dbe6f1;color:#0f172a;padding:18px 24px;border-radius:12px;cursor:pointer;font-size:1.2rem;font-weight:700}
   .btn:hover{background:#e9eef5}
   .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-color:transparent}
@@ -150,8 +158,11 @@
   .tile-body{position:relative;z-index:1;display:flex;flex-direction:column;gap:8px;width:100%;flex:1}
   .tile .title{font-weight:800;font-size:1.25rem}
   .tile .hint{font-size:1.05rem;color:var(--muted)}
-  .tile .sub-inputs{display:none;margin-top:8px;width:100%}
-  .tile .sub-inputs input{width:100%;border:1px solid #dbe6f1;border-radius:12px;padding:10px 12px;font-size:1.05rem}
+  .tile .sub-inputs{display:none;margin-top:12px;width:100%}
+  .tile .sub-inputs .input-field{background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.16);border-radius:16px;padding:14px 16px}
+  .tile .sub-inputs .input-field .input-label{color:var(--primary);font-size:1rem}
+  .tile .sub-inputs .currency-input{background:#fff;border-color:rgba(37,99,235,.2)}
+  .tile .sub-inputs .input-hint{font-size:.82rem}
   #subs .tile{--accent:var(--primary)}
   #subs .tile .icon{color:var(--primary)}
   .tile.cat-mech{--accent:var(--mech)}
@@ -174,11 +185,13 @@
   .comp:hover{border-color:#93c5fd;box-shadow:0 12px 26px rgba(15,23,42,.12)}
   .comp .icon{width:80px;height:80px;border-radius:20px;display:grid;place-items:center;background:transparent;border:none;color:var(--primary);}
   .comp .icon svg{width:64px;height:64px;stroke:currentColor;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
-  .comp .inputs{display:none;gap:8px;margin-top:6px;flex-wrap:wrap}
-  .comp.selected .inputs{display:flex;animation:fadeIn .2s ease}
-  .comp .inputs input{flex:1;border:1px solid #dbe6f1;border-radius:8px;padding:8px;font-size:1.05rem}
-  .comp .inputs input.qtd{flex:0 0 60px}
-  .comp .inputs input.val{flex:0 0 80px}
+  .comp .inputs{display:none;gap:12px;margin-top:12px;grid-template-columns:minmax(80px,0.25fr) minmax(0,1fr) minmax(180px,0.6fr)}
+  .comp.selected .inputs{display:grid;animation:fadeIn .2s ease}
+  .comp .inputs .input-label{font-size:.95rem}
+  .comp .inputs input{padding:12px 14px;font-size:1.05rem}
+  .comp .inputs input.qtd{min-width:72px}
+  .comp .inputs input.val{width:100%}
+  .comp .inputs .currency-input{background:#fff;border-color:rgba(37,99,235,.24)}
   .comp .hint{font-size:1.05rem;color:var(--muted)}
   .actions{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
   .action-btn{flex:0 0 auto;background:#fff;border:2px solid #e2e8f0;border-radius:18px;padding:12px 20px;font-size:1.05rem;cursor:pointer;transition:.2s;font-weight:600}
@@ -190,6 +203,31 @@
   .comp.acao-reparo .icon{color:var(--warn)}
   .comp.acao-troca .icon{color:var(--bad)}
   .footer-note{font-size:1rem;color:var(--muted)}
+  #live-summary{display:flex;flex-direction:column;gap:16px}
+  .summary-header{display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
+  .summary-note{margin:0;color:var(--muted);font-size:1rem}
+  .summary-system{background:#f9fbff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:8px}
+  .summary-system__head{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;justify-content:space-between}
+  .summary-system__title{font-size:1.2rem;font-weight:700}
+  .summary-system__value{font-weight:700;color:var(--primary)}
+  .summary-labor{display:flex;flex-direction:column;gap:6px;min-width:200px}
+  .summary-labor>span{font-size:.9rem;color:var(--muted)}
+  .summary-sub{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+  .summary-sub:first-of-type{margin-top:12px}
+  .summary-sub__head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .summary-sub__name{font-weight:600}
+  .summary-sub__total{font-weight:700}
+  .summary-entry{display:flex;justify-content:space-between;gap:12px;margin-top:10px}
+  .summary-entry__info{display:flex;flex-direction:column;gap:4px}
+  .summary-entry__title{font-weight:600}
+  .summary-entry__meta{font-size:.9rem;color:var(--muted)}
+  .summary-entry__obs{font-size:.9rem;color:var(--muted)}
+  .summary-entry__value{font-weight:600}
+  .summary-entry--manual{background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.16);border-radius:12px;padding:10px 12px}
+  .summary-empty{padding:12px 16px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);font-size:1rem}
+  .summary-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:12px;border-top:1px solid var(--line)}
+  .summary-total-label{font-weight:600;color:var(--muted)}
+  .summary-total-value{font-weight:800;font-size:1.3rem;color:var(--primary)}
   .step.hidden{display:none}
   .current-system{position:sticky;top:12px;z-index:10;display:flex;flex-wrap:wrap;align-items:center;gap:16px;background:rgba(241,245,249,.92);border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin-bottom:18px;backdrop-filter:blur(6px);--indicator-accent:var(--primary)}
   .current-system[data-cat="mech"]{--indicator-accent:var(--mech)}
@@ -220,8 +258,10 @@
     .comp .icon{width:70px;height:70px}
     .comp .icon svg{width:54px;height:54px}
     .actions{width:100%}
-    .comp .inputs{flex-direction:column;width:100%}
-    .comp .inputs input{flex:1;width:100%}
+    .comp .inputs{grid-template-columns:1fr;width:100%}
+    .comp .inputs input{width:100%}
+    .summary-system{padding:14px}
+    .summary-labor{min-width:0;width:100%}
     .list-panel{padding:14px}
     .action-btn{flex:1;justify-content:center}
   }
@@ -233,6 +273,10 @@
     .vehicle-summary__meta div{font-size:.9rem}
     .highlight-callout{flex-direction:column;gap:6px}
     .priority-box{padding:12px}
+    .summary-system{padding:12px}
+    .summary-entry{flex-direction:column;align-items:flex-start}
+    .summary-entry__value{align-self:flex-end}
+    .summary-labor{width:100%}
   }
   @media print{ .btn, .toolbar, .list-panel, .tiles, .row-actions, .search{display:none !important} }
 </style>
@@ -272,8 +316,7 @@
         <div class="plate-field priority-box">
           <label>Placa</label>
           <div class="plate-autocomplete">
-            <input id="f-placa" placeholder="Digite a placa" autocomplete="off" spellcheck="false" list="f-placa-list"/>
-            <datalist id="f-placa-list"></datalist>
+            <input id="f-placa" placeholder="Digite a placa" autocomplete="off" spellcheck="false" />
             <div id="plate-suggestions" class="plate-autocomplete__list" hidden></div>
           </div>
         </div>
@@ -372,6 +415,19 @@
   </div>
 
   <!-- ITENS LANÇADOS (oculto) -->
+  <div class="card" id="live-summary" hidden>
+    <div class="summary-header">
+      <h3 class="section-title">Resumo do checklist</h3>
+      <p class="summary-note">Os valores informados nos SubSistemas somam-se aos componentes selecionados.</p>
+    </div>
+    <div id="summary-content"></div>
+    <div id="summary-empty" class="summary-empty">Selecione um SubSistema, informe um valor ou marque um componente para visualizar o resumo.</div>
+    <div class="summary-footer" hidden>
+      <span class="summary-total-label">Total estimado</span>
+      <span id="summary-total" class="summary-total-value">R$ 0,00</span>
+    </div>
+  </div>
+
   <div class="card" id="itemsCard" style="display:none">
     <div class="toolbar" style="justify-content:space-between;align-items:center">
       <h3 class="section-title" style="margin:0">Itens da OS</h3>
@@ -482,6 +538,74 @@ let CURRENT_VEHICLE = null;
 let PENDING_VEHICLE_PLATE = null;
 let CURRENT_STATUS = 'Aberta';
 let LAST_HISTORY_PLATE = '';
+const ACTION_LABEL = {troca:'Troca/Substituição', reparo:'Reparo/Recondicionamento'};
+
+function ensureSystem(sys){
+  if(!CHECKLIST[sys]) CHECKLIST[sys] = {};
+  return CHECKLIST[sys];
+}
+function ensureSub(sys, sub){
+  const system = ensureSystem(sys);
+  if(!system[sub]) system[sub] = {};
+  return system[sub];
+}
+function ensureSystemMeta(sys){
+  const system = ensureSystem(sys);
+  if(!system._meta) system._meta = {labor:0};
+  return system._meta;
+}
+function ensureSubMeta(sys, sub){
+  const subObj = ensureSub(sys, sub);
+  if(!subObj._meta) subObj._meta = {manualValue:0};
+  return subObj._meta;
+}
+function getSubManualValue(sys, sub){
+  return Number(CHECKLIST[sys]?.[sub]?._meta?.manualValue || 0);
+}
+function getSystemLaborValue(sys){
+  return Number(CHECKLIST[sys]?._meta?.labor || 0);
+}
+function hasComponentEntries(subObj){
+  return Object.keys(subObj || {}).some(k=>k !== '_meta' && subObj[k]);
+}
+function cleanupSub(sys, sub){
+  const system = CHECKLIST[sys];
+  if(!system || !system[sub]) return;
+  const subObj = system[sub];
+  const manual = Number(subObj._meta?.manualValue || 0);
+  if(subObj._meta){
+    if(manual && manual>0) subObj._meta.manualValue = manual;
+    else delete subObj._meta;
+  }
+  if(!hasComponentEntries(subObj) && (!manual || manual<=0)){
+    delete system[sub];
+  }
+}
+function cleanupSystem(sys){
+  const system = CHECKLIST[sys];
+  if(!system) return;
+  const labor = Number(system._meta?.labor || 0);
+  if(system._meta){
+    if(labor && labor>0) system._meta.labor = labor;
+    else delete system._meta;
+  }
+  const hasSubs = Object.keys(system).some(k=>k !== '_meta');
+  if(!hasSubs && (!labor || labor<=0)){
+    delete CHECKLIST[sys];
+  }
+}
+function hasSubContent(sys, sub){
+  const system = CHECKLIST[sys];
+  if(!system || !system[sub]) return false;
+  if(getSubManualValue(sys, sub)>0) return true;
+  return hasComponentEntries(system[sub]);
+}
+function hasSystemContent(sys){
+  if(getSystemLaborValue(sys)>0) return true;
+  const system = CHECKLIST[sys];
+  if(!system) return false;
+  return Object.keys(system).some(sub=>sub !== '_meta' && hasSubContent(sys, sub));
+}
 
 /* ======= Utils ======= */
 const fmtBRL = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0);
@@ -612,18 +736,19 @@ function countSelectedComponents(sys){
   const data = CHECKLIST[sys];
   if(!data) return 0;
   let total = 0;
-  Object.values(data).forEach(subMap=>{
+  Object.keys(data).forEach(sub=>{
+    if(sub === '_meta') return;
+    const subMap = data[sub];
     if(!subMap) return;
-    total += Object.keys(subMap).length;
+    total += Object.keys(subMap).filter(k=>k !== '_meta').length;
+    if(getSubManualValue(sys, sub)>0) total += 1;
   });
+  if(getSystemLaborValue(sys)>0) total += 1;
   return total;
 }
 
 function hasAnyChecklistItems(){
-  return Object.values(CHECKLIST).some(subMap=>{
-    if(!subMap) return false;
-    return Object.values(subMap).some(compMap=>compMap && Object.keys(compMap).length>0);
-  });
+  return Object.keys(CHECKLIST).some(sys=> hasSystemContent(sys));
 }
 
 function snapshotSystemState(sys){
@@ -748,7 +873,7 @@ function selectSistema(sys, tile){
   SYS = sys;
   SUBS.clear();
   if(CHECKLIST[sys]){
-    Object.keys(CHECKLIST[sys]).forEach(sub=>SUBS.add(sub));
+    Object.keys(CHECKLIST[sys]).forEach(sub=>{ if(sub !== '_meta') SUBS.add(sub); });
   }
   [...tilesSistemas.children].forEach(c=>{
     c.classList.remove('active');
@@ -781,23 +906,42 @@ function renderSubSistemas(){
                    <div class="tile-body">
                      <div class="title">${sub}</div>
                      <div class="hint">Clique para selecionar</div>
-                     <div class="sub-inputs"><input type="number" class="sub-val" placeholder="Valor" value="0"></div>
+                     <div class="sub-inputs">
+                       <label class="input-field">
+                         <span class="input-label">Valor do SubSistema (opcional)</span>
+                         <div class="currency-input">
+                           <span>R$</span>
+                           <input type="number" class="sub-val" placeholder="0,00" step="0.01" min="0">
+                         </div>
+                         <span class="input-hint">Use quando quiser lançar um valor geral para este SubSistema.</span>
+                       </label>
+                     </div>
                    </div>`;
     if(SUBS.has(sub)) t.classList.add('active');
+    const subInput = t.querySelector('.sub-val');
+    if(subInput){
+      const savedValue = getSubManualValue(SYS, sub);
+      subInput.value = savedValue>0 ? savedValue : '';
+      ['input','change'].forEach(evt=>{
+        subInput.addEventListener(evt, ()=>handleSubValueChange(SYS, sub, subInput));
+      });
+    }
     function toggle(){
       if(SUBS.has(sub)){
         SUBS.delete(sub);
         t.classList.remove('active');
         if(CHECKLIST[SYS] && CHECKLIST[SYS][sub]){
           delete CHECKLIST[SYS][sub];
-          if(!Object.keys(CHECKLIST[SYS]).length) delete CHECKLIST[SYS];
+          cleanupSystem(SYS);
         }
+        if(subInput) subInput.value = '';
       }else{
         SUBS.add(sub);
         t.classList.add('active');
       }
       hasUnsavedChanges = true;
       renderComponentes();
+      updateLiveSummary();
       updateStepFlow();
     }
     t.addEventListener('click', e=>{ if(e.target.closest('.sub-inputs')) return; toggle(); });
@@ -806,6 +950,22 @@ function renderSubSistemas(){
   });
   updateStepFlow();
   applyFilterSub();
+}
+function handleSubValueChange(sys, sub, input){
+  if(!input) return;
+  const raw = parseFloat(input.value || '');
+  const value = isFinite(raw) && raw>0 ? raw : 0;
+  if(value>0){
+    const meta = ensureSubMeta(sys, sub);
+    meta.manualValue = value;
+  }else if(CHECKLIST[sys] && CHECKLIST[sys][sub] && CHECKLIST[sys][sub]._meta){
+    CHECKLIST[sys][sub]._meta.manualValue = 0;
+  }
+  cleanupSub(sys, sub);
+  cleanupSystem(sys);
+  hasUnsavedChanges = true;
+  updateLiveSummary();
+  updateStepFlow();
 }
 function renderComponentes(){
   compsBox.innerHTML='';
@@ -829,9 +989,21 @@ function renderComponentes(){
                        <button type="button" class="action-btn mic" title="Ditado por voz">🎤</button>
                      </div>
                      <div class="inputs">
-                       <input type="number" class="qtd" placeholder="Qtd" value="1" min="0">
-                       <input class="obs" placeholder="Observações">
-                       <input type="number" class="val" placeholder="Valor" value="0" step="0.01">
+                       <label class="input-field">
+                         <span class="input-label">Quantidade</span>
+                         <input type="number" class="qtd" placeholder="Qtd" value="1" min="0">
+                       </label>
+                       <label class="input-field">
+                         <span class="input-label">Observações</span>
+                         <input class="obs" placeholder="Detalhes ou peculiaridades">
+                       </label>
+                       <label class="input-field">
+                         <span class="input-label">Valor do componente</span>
+                         <div class="currency-input">
+                           <span>R$</span>
+                           <input type="number" class="val" placeholder="0,00" value="0" step="0.01" min="0">
+                         </div>
+                       </label>
                      </div>
                      </div>`;
       const buttons = c.querySelectorAll('.action-btn');
@@ -855,7 +1027,7 @@ function renderComponentes(){
         c.classList.add('selected');
         c.classList.remove('acao-reparo','acao-troca');
         c.classList.add(`acao-${acao}`);
-        c.querySelector('.inputs').style.display='flex';
+        c.querySelector('.inputs').style.display='grid';
         const obs=c.querySelector('.obs').value;
         const val=parseFloat(c.querySelector('.val').value||0);
         const qtd=parseFloat(c.querySelector('.qtd').value||1);
@@ -879,7 +1051,7 @@ function renderComponentes(){
         c.classList.add('selected');
         c.classList.add(`acao-${saved.acao}`);
         const inputs = c.querySelector('.inputs');
-        inputs.style.display='flex';
+        inputs.style.display='grid';
         c.querySelector('.qtd').value = saved.qtd ?? 1;
         c.querySelector('.obs').value = saved.obs || '';
         c.querySelector('.val').value = saved.val ?? 0;
@@ -903,15 +1075,15 @@ function setStatus(sys, sub, comp, acao, obs='', val=0, qtd=1){
   if(!acao){
     if(CHECKLIST[sys] && CHECKLIST[sys][sub]){
       delete CHECKLIST[sys][sub][comp];
-      if(Object.keys(CHECKLIST[sys][sub]).length===0) delete CHECKLIST[sys][sub];
-      if(Object.keys(CHECKLIST[sys]).length===0) delete CHECKLIST[sys];
+      cleanupSub(sys, sub);
+      cleanupSystem(sys);
     }
     hasUnsavedChanges = true;
     updateStepFlow();
+    updateLiveSummary();
     return;
   }
-  if(!CHECKLIST[sys]) CHECKLIST[sys] = {};
-  if(!CHECKLIST[sys][sub]) CHECKLIST[sys][sub] = {};
+  ensureSub(sys, sub);
   const entry = {
     acao,
     obs: obs || '',
@@ -923,15 +1095,22 @@ function setStatus(sys, sub, comp, acao, obs='', val=0, qtd=1){
   CHECKLIST[sys][sub][comp] = entry;
   hasUnsavedChanges = true;
   updateStepFlow();
+  updateLiveSummary();
 }
 
 function sanitizeChecklist(){
   for(const sys in CHECKLIST){
-    for(const sub in CHECKLIST[sys]){
-      for(const comp in CHECKLIST[sys][sub]){
-        const entry = CHECKLIST[sys][sub][comp];
+    const system = CHECKLIST[sys];
+    if(!system) continue;
+    for(const sub in system){
+      if(sub === '_meta') continue;
+      const subObj = system[sub];
+      if(!subObj) continue;
+      for(const comp in subObj){
+        if(comp === '_meta') continue;
+        const entry = subObj[comp];
         if(!entry){
-          delete CHECKLIST[sys][sub][comp];
+          delete subObj[comp];
           continue;
         }
         if(!entry.acao && entry.status){
@@ -939,7 +1118,7 @@ function sanitizeChecklist(){
           else if(entry.status === 'warn') entry.acao = 'reparo';
         }
         if(!entry.acao){
-          delete CHECKLIST[sys][sub][comp];
+          delete subObj[comp];
           continue;
         }
         entry.obs = entry.obs || '';
@@ -948,11 +1127,21 @@ function sanitizeChecklist(){
         entry.qtd = Number(entry.qtd)||0;
         if(!isFinite(entry.qtd) || entry.qtd<=0) entry.qtd = 1;
       }
-      if(!Object.keys(CHECKLIST[sys][sub]).length){
-        delete CHECKLIST[sys][sub];
+      const manual = Number(subObj._meta?.manualValue || 0);
+      if(subObj._meta){
+        if(manual && manual>0) subObj._meta.manualValue = manual;
+        else delete subObj._meta;
+      }
+      if(!hasComponentEntries(subObj) && (!manual || manual<=0)){
+        delete system[sub];
       }
     }
-    if(!Object.keys(CHECKLIST[sys]||{}).length){
+    const labor = Number(system._meta?.labor || 0);
+    if(system._meta){
+      if(labor && labor>0) system._meta.labor = labor;
+      else delete system._meta;
+    }
+    if(!hasSystemContent(sys)){
       delete CHECKLIST[sys];
     }
   }
@@ -971,13 +1160,85 @@ function updateSuggestions(){
   const sug=[];
   const freios = CHECKLIST['Freios'];
   if(freios){
-    Object.values(freios).forEach(obj=>{
-      Object.values(obj).forEach(it=>{ if(it.acao==='troca' || it.acao==='reparo') sug.push('Revisar pneus e rodas'); });
+    Object.entries(freios).forEach(([subKey,obj])=>{
+      if(subKey==='_meta' || !obj) return;
+      Object.entries(obj).forEach(([compKey,it])=>{
+        if(compKey==='_meta' || !it) return;
+        if(it.acao==='troca' || it.acao==='reparo') sug.push('Revisar pneus e rodas');
+      });
     });
   }
   const list=document.getElementById('sug-list');
   list.innerHTML = sug.map(s=>`<li>${s}</li>`).join('');
   document.getElementById('sugestoes').style.display = sug.length ? 'block' : 'none';
+  updateLiveSummary();
+}
+
+function updateLiveSummary(){
+  if(!summaryCard || !summaryContent || !summaryEmpty || !summaryFooter || !summaryTotalEl) return;
+  const systems = Object.keys(CHECKLIST);
+  const sections = [];
+  let grandTotal = 0;
+  systems.forEach(sys=>{
+    if(!hasSystemContent(sys)) return;
+    const sysData = CHECKLIST[sys];
+    let sysTotal = 0;
+    const subsHtml = [];
+    Object.keys(sysData).forEach(sub=>{
+      if(sub === '_meta') return;
+      const subObj = sysData[sub];
+      if(!subObj) return;
+      const manual = Number(subObj._meta?.manualValue || 0);
+      const components = [];
+      let subTotal = manual>0 ? manual : 0;
+      Object.keys(subObj).forEach(comp=>{
+        if(comp === '_meta') return;
+        const entry = subObj[comp];
+        if(!entry || !entry.acao) return;
+        const qtd = Number(entry.qtd || 0) || 0;
+        const val = Number(entry.val || 0) || 0;
+        const lineTotal = Math.max(qtd,0) * Math.max(val,0);
+        subTotal += lineTotal;
+        components.push({name:comp, acao:entry.acao, obs:entry.obs, qtd, val, total:lineTotal});
+      });
+      if(components.length || manual>0){
+        const manualHtml = manual>0
+          ? `<div class="summary-entry summary-entry--manual"><div class="summary-entry__info"><span class="summary-entry__title">Valor informado no SubSistema</span><span class="summary-entry__meta">Lançado manualmente</span></div><span class="summary-entry__value">${fmtBRL(manual)}</span></div>`
+          : '';
+        const componentHtml = components.map(item=>{
+          const actionLabel = ACTION_LABEL[item.acao] || 'Serviço';
+          const parts = [actionLabel];
+          const qty = Math.max(item.qtd || 0, 0);
+          const val = Math.max(item.val || 0, 0);
+          const unit = fmtBRL(val);
+          const price = qty>1 ? `${qty} × ${unit}` : unit;
+          parts.push(price);
+          const meta = parts.join(' • ');
+          const obsHtml = item.obs ? `<span class="summary-entry__obs">${escapeHtml(item.obs)}</span>` : '';
+          return `<div class="summary-entry"><div class="summary-entry__info"><span class="summary-entry__title">${escapeHtml(item.name)}</span><span class="summary-entry__meta">${escapeHtml(meta)}</span>${obsHtml}</div><span class="summary-entry__value">${fmtBRL(item.total)}</span></div>`;
+        }).join('');
+        subsHtml.push(`<div class="summary-sub"><div class="summary-sub__head"><span class="summary-sub__name">${escapeHtml(sub)}</span><span class="summary-sub__total">${fmtBRL(subTotal)}</span></div>${manualHtml}${componentHtml}</div>`);
+        sysTotal += subTotal;
+      }
+    });
+    const labor = getSystemLaborValue(sys);
+    if(labor>0) sysTotal += labor;
+    const laborInput = `<label class="summary-labor"><span>Mão de obra deste sistema</span><div class="currency-input"><span>R$</span><input type="number" class="summary-labor-input" data-sys="${escapeHtml(sys)}" step="0.01" min="0" value="${labor>0?labor:''}"></div></label>`;
+    sections.push(`<div class="summary-system" data-system="${escapeHtml(sys)}"><div class="summary-system__head"><div><div class="summary-system__title">${escapeHtml(sys)}</div><div class="summary-system__value">${fmtBRL(sysTotal)}</div></div>${laborInput}</div>${subsHtml.join('')}</div>`);
+    grandTotal += sysTotal;
+  });
+  summaryCard.hidden = false;
+  if(!sections.length){
+    summaryContent.innerHTML = '';
+    summaryEmpty.hidden = false;
+    summaryFooter.hidden = true;
+    summaryTotalEl.textContent = fmtBRL(0);
+    return;
+  }
+  summaryContent.innerHTML = sections.join('');
+  summaryEmpty.hidden = true;
+  summaryFooter.hidden = false;
+  summaryTotalEl.textContent = fmtBRL(grandTotal);
 }
 
 /* Filtros */
@@ -1009,6 +1270,30 @@ const summaryNodes = {
   ano: document.getElementById('sum-ano'),
   motorista: document.getElementById('sum-motorista')
 };
+const summaryCard = document.getElementById('live-summary');
+const summaryContent = document.getElementById('summary-content');
+const summaryEmpty = document.getElementById('summary-empty');
+const summaryFooter = summaryCard ? summaryCard.querySelector('.summary-footer') : null;
+const summaryTotalEl = document.getElementById('summary-total');
+if(summaryContent){
+  summaryContent.addEventListener('input', e=>{
+    const target = e.target;
+    if(!target.classList?.contains('summary-labor-input')) return;
+    const sys = target.dataset.sys;
+    if(!sys) return;
+    const raw = parseFloat(target.value || '');
+    const value = isFinite(raw) && raw>0 ? raw : 0;
+    if(value>0){
+      ensureSystemMeta(sys).labor = value;
+    }else if(CHECKLIST[sys] && CHECKLIST[sys]._meta){
+      CHECKLIST[sys]._meta.labor = 0;
+    }
+    cleanupSystem(sys);
+    hasUnsavedChanges = true;
+    updateLiveSummary();
+    updateStepFlow();
+  });
+}
 
 if(summaryToggle){
   summaryToggle.addEventListener('click', ()=>{
@@ -1049,18 +1334,6 @@ function renderVehicleSummary(vehicle){
     summaryToggle.setAttribute('aria-expanded','false');
     summaryToggle.textContent = 'Alterar dados';
   }
-}
-
-function populateVehicleSelect(){
-  const datalist = document.getElementById('f-placa-list');
-  if(!datalist) return;
-  const sorted = [...VEHICLES].sort((a,b)=>String(a.placa||'').localeCompare(String(b.placa||''), 'pt-BR', {numeric:true}));
-  const options = sorted.map(v=>{
-    const placa = String(v.placa||'').toUpperCase();
-    const label = v.veiculo ? `${placa} - ${v.veiculo}` : placa;
-    return `<option value="${escapeHtml(placa)}" label="${escapeHtml(label)}"></option>`;
-  });
-  datalist.innerHTML = options.join('');
 }
 
 function filterVehiclesByPlate(query){
@@ -1209,7 +1482,6 @@ function loadVehicles(){
   google.script.run
     .withSuccessHandler(list=>{
       VEHICLES = Array.isArray(list) ? list.map(v=>({ ...v, placa: String(v.placa||'').toUpperCase().replace(/\s+/g,'') })) : [];
-      populateVehicleSelect();
       if(PENDING_VEHICLE_PLATE){
         document.getElementById('f-placa').value = PENDING_VEHICLE_PLATE;
         handleVehicleChange();
